@@ -28,9 +28,128 @@ const initialState: TimerState = {
   isFinished: false,
 };
 
+interface ReportModalProps {
+  timerState: TimerState;
+  onClose: () => void;
+  formatDateTime: (timestamp: number) => string;
+}
+
+function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Mevcut Rapor</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            ❌
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <span>⏱️</span> Toplam Çalışma
+            </h3>
+            <div className="text-3xl font-mono font-bold text-green-600">
+              {new Date(timerState.workTime).toISOString().substr(11, 8)}
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <span>☕</span> Toplam Mola
+            </h3>
+            <div className="text-3xl font-mono font-bold text-yellow-600">
+              {new Date(timerState.breakTime).toISOString().substr(11, 8)}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+          <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
+            <span>📊</span> Detaylı Oturumlar
+          </h3>
+          <div className="space-y-4">
+            {timerState.sessions.map((session, index) => (
+              <div 
+                key={index} 
+                className={`p-4 rounded-lg border ${
+                  session.type === 'work' 
+                    ? 'border-green-200 bg-green-50' 
+                    : 'border-yellow-200 bg-yellow-50'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="font-semibold text-lg text-gray-800">
+                    {session.type === 'work' ? '🎯 Çalışma' : '☕ Mola'} #{index + 1}
+                  </div>
+                  {session.endTime && (
+                    <div className={`font-mono font-bold ${
+                      session.type === 'work' ? 'text-green-600' : 'text-yellow-600'
+                    }`}>
+                      {new Date(session.endTime - session.startTime).toISOString().substr(11, 8)}
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                  <div className="space-y-1">
+                    <div className="font-medium">Başlangıç</div>
+                    <div>{formatDateTime(session.startTime)}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium">Bitiş</div>
+                    <div>{session.endTime ? formatDateTime(session.endTime) : 'Devam Ediyor'}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ConfirmModalProps {
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function ConfirmModal({ onConfirm, onCancel }: ConfirmModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Çalışmayı Bitir</h2>
+        <p className="text-gray-600 mb-6">
+          Çalışmayı bitirmek istediğinize emin misiniz? Bu işlem geri alınamaz ve mevcut çalışma oturumunuz sonlandırılacaktır.
+        </p>
+        <div className="flex gap-4">
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          >
+            Evet, Bitir
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            İptal
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [timerState, setTimerState] = useState<TimerState>(initialState);
   const [displayTime, setDisplayTime] = useState('00:00:00');
+  const [showReport, setShowReport] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     try {
@@ -168,12 +287,39 @@ export default function Home() {
     setTimerState(initialState);
   };
 
+  const handleFinishWork = () => {
+    setShowConfirm(true);
+  };
+
+  const confirmFinishWork = () => {
+    finishWork();
+    setShowConfirm(false);
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-4xl">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
-          Çalışma Takibi
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">
+            Çalışma Takibi
+          </h1>
+          {!timerState.isFinished && timerState.sessions.length > 0 && (
+            <button
+              onClick={() => setShowReport(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all duration-200 font-medium border border-indigo-100 shadow-sm"
+              title="Raporu Görüntüle"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
+                <path d="M16 13H8" />
+                <path d="M16 17H8" />
+                <path d="M10 9H8" />
+              </svg>
+              Rapor
+            </button>
+          )}
+        </div>
         
         {!timerState.isFinished ? (
           <>
@@ -216,7 +362,7 @@ export default function Home() {
 
               {(timerState.isWorking || timerState.isBreak) && (
                 <button
-                  onClick={finishWork}
+                  onClick={handleFinishWork}
                   className="w-full py-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-lg"
                 >
                   Çalışmayı Bitir
@@ -304,6 +450,21 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {showReport && (
+        <ReportModal
+          timerState={timerState}
+          onClose={() => setShowReport(false)}
+          formatDateTime={formatDateTime}
+        />
+      )}
+
+      {showConfirm && (
+        <ConfirmModal
+          onConfirm={confirmFinishWork}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
     </main>
   );
 }
