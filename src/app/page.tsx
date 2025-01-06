@@ -501,21 +501,21 @@ export default function Home() {
   };
 
   const startWork = () => {
-    const now = Date.now();
+    const currentTime = Date.now();
     setTimerState(prev => {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
       if (lastSession && lastSession.endTime === null) {
-        lastSession.endTime = now;
+        lastSession.endTime = currentTime;
       }
 
-      const newSessions = [...sessions, { startTime: now, endTime: null, type: 'work' as const }];
+      const newSessions = [...sessions, { startTime: currentTime, endTime: null, type: 'work' as const }];
       const newState = {
         ...prev,
         isWorking: true,
         isBreak: false,
-        lastStartTime: now,
+        lastStartTime: currentTime,
         sessions: newSessions,
         isFinished: false,
       };
@@ -525,21 +525,21 @@ export default function Home() {
   };
 
   const startBreak = () => {
-    const now = Date.now();
+    const currentTime = Date.now();
     setTimerState(prev => {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
       if (lastSession && lastSession.endTime === null) {
-        lastSession.endTime = now;
+        lastSession.endTime = currentTime;
       }
 
-      const newSessions = [...sessions, { startTime: now, endTime: null, type: 'break' as const }];
+      const newSessions = [...sessions, { startTime: currentTime, endTime: null, type: 'break' as const }];
       const newState = {
         ...prev,
         isWorking: false,
         isBreak: true,
-        lastStartTime: now,
+        lastStartTime: currentTime,
         sessions: newSessions,
       };
       localStorage.setItem('timerState', JSON.stringify(newState));
@@ -548,13 +548,13 @@ export default function Home() {
   };
 
   const finishWork = () => {
-    const now = Date.now();
+    const currentTime = Date.now();
     setTimerState(prev => {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
       if (lastSession && lastSession.endTime === null) {
-        lastSession.endTime = now;
+        lastSession.endTime = currentTime;
       }
 
       const newState = {
