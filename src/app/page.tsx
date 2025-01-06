@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 // Add translations
 const translations = {
   tr: {
     title: 'Çalışma Takibi',
+    register: 'Kayıt Ol',
     status: {
       working: 'Çalışıyor',
       break: 'Mola',
@@ -40,6 +42,7 @@ const translations = {
   },
   en: {
     title: 'Work Tracker',
+    register: 'Register',
     status: {
       working: 'Working',
       break: 'Break',
@@ -74,6 +77,7 @@ const translations = {
   },
   ja: {
     title: '作業トラッカー',
+    register: '登録',
     status: {
       working: '作業中',
       break: '休憩中',
@@ -590,7 +594,13 @@ export default function Home() {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               {t.title}
             </h1>
-            <div>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/register"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+              >
+                {t.register}
+              </Link>
               <LanguageButton
                 currentLang={language}
                 onLanguageChange={setLanguage}
