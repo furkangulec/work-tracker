@@ -6,58 +6,58 @@ import Footer from '../components/Footer';
 
 const translations = {
   tr: {
-    title: 'Kayıt Ol',
+    title: 'Giriş Yap',
     backToHome: 'Ana Sayfaya Dön',
     email: 'E-posta',
     password: 'Şifre',
-    register: 'Kayıt Ol',
+    login: 'Giriş Yap',
     emailPlaceholder: 'ornek@email.com',
     passwordPlaceholder: 'Şifrenizi girin',
     errors: {
       required: 'Bu alan zorunludur',
       invalidEmail: 'Geçerli bir e-posta adresi girin',
-      userExists: 'Bu e-posta adresi zaten kayıtlı',
+      invalidCredentials: 'E-posta veya şifre hatalı',
       serverError: 'Bir hata oluştu, lütfen tekrar deneyin'
     },
-    success: 'Kayıt başarılı! Yönlendiriliyorsunuz...',
-    haveAccount: 'Zaten hesabın var mı?',
-    login: 'Giriş Yap'
+    success: 'Giriş başarılı! Yönlendiriliyorsunuz...',
+    noAccount: 'Hesabın yok mu?',
+    register: 'Kayıt Ol'
   },
   en: {
-    title: 'Register',
+    title: 'Login',
     backToHome: 'Back to Home',
     email: 'Email',
     password: 'Password',
-    register: 'Register',
+    login: 'Login',
     emailPlaceholder: 'example@email.com',
     passwordPlaceholder: 'Enter your password',
     errors: {
       required: 'This field is required',
       invalidEmail: 'Please enter a valid email',
-      userExists: 'This email is already registered',
+      invalidCredentials: 'Invalid email or password',
       serverError: 'An error occurred, please try again'
     },
-    success: 'Registration successful! Redirecting...',
-    haveAccount: 'Already have an account?',
-    login: 'Login'
+    success: 'Login successful! Redirecting...',
+    noAccount: 'Don\'t have an account?',
+    register: 'Register'
   },
   ja: {
-    title: '登録',
+    title: 'ログイン',
     backToHome: 'ホームに戻る',
     email: 'メールアドレス',
     password: 'パスワード',
-    register: '登録',
+    login: 'ログイン',
     emailPlaceholder: 'example@email.com',
     passwordPlaceholder: 'パスワードを入力',
     errors: {
       required: 'この項目は必須です',
       invalidEmail: '有効なメールアドレスを入力してください',
-      userExists: 'このメールアドレスは既に登録されています',
+      invalidCredentials: 'メールアドレスまたはパスワードが間違っています',
       serverError: 'エラーが発生しました。もう一度お試しください'
     },
-    success: '登録が完了しました！リダイレクトしています...',
-    haveAccount: 'すでにアカウントをお持ちですか？',
-    login: 'ログイン'
+    success: 'ログインに成功しました！リダイレクトしています...',
+    noAccount: 'アカウントをお持ちでない方',
+    register: '登録'
   }
 };
 
@@ -159,7 +159,7 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
   );
 }
 
-export default function Register() {
+export default function Login() {
   const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -175,7 +175,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -186,8 +186,8 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.error === 'User already exists') {
-          setError(t.errors.userExists);
+        if (data.error === 'Invalid credentials') {
+          setError(t.errors.invalidCredentials);
         } else {
           setError(t.errors.serverError);
         }
@@ -195,7 +195,10 @@ export default function Register() {
       }
 
       setSuccess(true);
-      // Redirect to home page after successful registration
+      // Store user info in localStorage
+      localStorage.setItem('user', JSON.stringify({ email }));
+      
+      // Redirect to home page after successful login
       setTimeout(() => {
         window.location.href = '/';
       }, 2000);
@@ -295,18 +298,18 @@ export default function Register() {
                 isLoading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
-              {isLoading ? '...' : t.register}
+              {isLoading ? '...' : t.login}
             </button>
           </form>
 
           <div className="mt-8 text-center space-y-4">
             <div className="text-sm text-gray-600">
-              {t.haveAccount}{' '}
+              {t.noAccount}{' '}
               <Link 
-                href="/login"
+                href="/register"
                 className="text-indigo-600 hover:text-indigo-700 transition-colors font-medium"
               >
-                {t.login}
+                {t.register}
               </Link>
             </div>
             <div>

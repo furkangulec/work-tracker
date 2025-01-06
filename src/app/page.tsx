@@ -13,6 +13,10 @@ const translations = {
       title: 'Çalışmalarını Kaydet!',
       description: 'Kayıt olarak tüm çalışma verilerini güvenle saklayabilir, geçmiş çalışmalarını görüntüleyebilir ve detaylı istatistikler elde edebilirsin.'
     },
+    welcome: {
+      title: 'Hoş Geldin!',
+      description: 'Çalışma verilerini otomatik olarak kaydediyoruz. İstediğin zaman geçmiş çalışmalarını görüntüleyebilirsin.'
+    },
     status: {
       working: 'Çalışıyor',
       break: 'Mola',
@@ -50,7 +54,11 @@ const translations = {
     register: 'Register',
     promo: {
       title: 'Save Your Work!',
-      description: 'By registering, you can securely store all your work data, view your past work sessions, and get detailed statistics.'
+      description: 'Register to securely store all your work data, view your past work sessions, and get detailed statistics.'
+    },
+    welcome: {
+      title: 'Welcome!',
+      description: 'We\'re automatically saving your work data. You can view your past work sessions anytime.'
     },
     status: {
       working: 'Working',
@@ -88,8 +96,12 @@ const translations = {
     title: '作業トラッカー',
     register: '登録',
     promo: {
-      title: '作業を記録しよう！',
-      description: '登録すると、すべての作業データを安全に保存し、過去の作業セッションを表示し、詳細な統計を取得できます。'
+      title: '作業を保存しよう！',
+      description: '登録して作業データを安全に保存し、過去の作業セッションを表示し、詳細な統計を取得できます。'
+    },
+    welcome: {
+      title: 'ようこそ！',
+      description: '作業データは自動的に保存されています。過去の作業セッションはいつでも確認できます。'
     },
     status: {
       working: '作業中',
@@ -374,6 +386,7 @@ export default function Home() {
   const [showReport, setShowReport] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
+  const [user, setUser] = useState<{ email: string } | null>(null);
 
   // Get translations for current language
   const t = translations[language];
@@ -520,6 +533,19 @@ export default function Home() {
     finishWork();
     setShowConfirm(false);
   };
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col relative">
@@ -717,21 +743,34 @@ export default function Home() {
           )}
         </div>
 
-        {/* Registration Promo */}
+        {/* Registration Promo or Welcome Message */}
         <div className="mt-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-4xl border border-indigo-100">
           <div className="text-center">
-            <h2 className="text-lg sm:text-xl font-bold text-indigo-900 mb-2">
-              {t.promo.title}
-            </h2>
-            <p className="text-sm sm:text-base text-indigo-700 mb-4 max-w-2xl mx-auto">
-              {t.promo.description}
-            </p>
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              {t.register}
-            </Link>
+            {user ? (
+              <>
+                <h2 className="text-lg sm:text-xl font-bold text-indigo-900 mb-2">
+                  {t.welcome.title}
+                </h2>
+                <p className="text-sm sm:text-base text-indigo-700 mb-4 max-w-2xl mx-auto">
+                  {t.welcome.description}
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg sm:text-xl font-bold text-indigo-900 mb-2">
+                  {t.promo.title}
+                </h2>
+                <p className="text-sm sm:text-base text-indigo-700 mb-4 max-w-2xl mx-auto">
+                  {t.promo.description}
+                </p>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                >
+                  {t.register}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </main>
