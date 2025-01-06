@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Add translations
 const translations = {
@@ -105,18 +105,90 @@ interface LanguageButtonProps {
   onLanguageChange: (lang: 'tr' | 'en') => void;
 }
 
+interface LanguageOption {
+  code: 'tr' | 'en';
+  flag: string;
+  name: string;
+}
+
+const languages: LanguageOption[] = [
+  {
+    code: 'tr',
+    flag: '🇹🇷',
+    name: 'Türkçe'
+  },
+  {
+    code: 'en',
+    flag: '🇬🇧',
+    name: 'English'
+  }
+];
+
 function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentLanguage = languages.find(lang => lang.code === currentLang);
+
   return (
-    <button
-      onClick={() => onLanguageChange(currentLang === 'tr' ? 'en' : 'tr')}
-      className="flex items-center gap-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium border border-gray-200 shadow-sm text-sm"
-      title={currentLang === 'tr' ? 'Switch to English' : 'Türkçe\'ye geç'}
-    >
-      <span className="w-5 h-5 flex items-center justify-center">
-        {currentLang === 'tr' ? '🇹🇷' : '🇬🇧'}
-      </span>
-      <span>{currentLang === 'tr' ? 'EN' : 'TR'}</span>
-    </button>
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium border border-gray-200 shadow-sm text-sm"
+      >
+        <span className="w-5 h-5 flex items-center justify-center">
+          {currentLanguage?.flag}
+        </span>
+        <span>{currentLanguage?.name}</span>
+        <svg 
+          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+          {languages.map((language) => (
+            <button
+              key={language.code}
+              onClick={() => {
+                onLanguageChange(language.code);
+                setIsOpen(false);
+              }}
+              className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors ${
+                currentLang === language.code ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'
+              }`}
+            >
+              <span className="w-5 h-5 flex items-center justify-center">
+                {language.flag}
+              </span>
+              <span>{language.name}</span>
+              {currentLang === language.code && (
+                <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
