@@ -15,8 +15,12 @@ export function signJwt(payload: UserJwtPayload): string {
 
 export function verifyJwt(token: string): UserJwtPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as UserJwtPayload;
+    console.log('Verifying token:', token);
+    const decoded = jwt.verify(token, JWT_SECRET) as UserJwtPayload;
+    console.log('Decoded token:', decoded);
+    return decoded;
   } catch (error) {
+    console.error('Token verification error:', error);
     return null;
   }
 }

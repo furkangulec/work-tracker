@@ -10,6 +10,7 @@ const translations = {
   tr: {
     title: 'Çalışma Takibi',
     register: 'Kayıt Ol',
+    login: 'Giriş Yap',
     promo: {
       title: 'Çalışmalarını Kaydet!',
       description: 'Kayıt olarak tüm çalışma verilerini güvenle saklayabilir, geçmiş çalışmalarını görüntüleyebilir ve detaylı istatistikler elde edebilirsin.'
@@ -53,6 +54,7 @@ const translations = {
   en: {
     title: 'Work Tracker',
     register: 'Register',
+    login: 'Login',
     promo: {
       title: 'Save Your Work!',
       description: 'Register to securely store all your work data, view your past work sessions, and get detailed statistics.'
@@ -96,6 +98,7 @@ const translations = {
   ja: {
     title: '作業トラッカー',
     register: '登録',
+    login: 'ログイン',
     promo: {
       title: '作業を保存しよう！',
       description: '登録して作業データを安全に保存し、過去の作業セッションを表示し、詳細な統計を取得できます。'
@@ -395,18 +398,21 @@ export default function Home() {
   useEffect(() => {
     // Check if user is logged in by verifying JWT token from cookie
     const cookies = document.cookie;
+    console.log('Cookies:', cookies); // Debug log
+
     const token = cookies.match(/token=([^;]+)/)?.[1];
+    console.log('Found token:', token); // Debug log
     
     if (token) {
       const userData = verifyJwt(token);
+      console.log('Verified user data:', userData); // Debug log
       if (userData) {
         setUser(userData);
-        console.log('User logged in:', userData); // Debug log
       } else {
-        console.log('Invalid token'); // Debug log
+        console.log('Token verification failed'); // Debug log
       }
     } else {
-      console.log('No token found'); // Debug log
+      console.log('No token found in cookies'); // Debug log
     }
   }, []); // Run only once on component mount
 
@@ -769,12 +775,14 @@ export default function Home() {
                 <p className="text-sm sm:text-base text-indigo-700 mb-4 max-w-2xl mx-auto">
                   {t.promo.description}
                 </p>
-                <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  {t.register}
-                </Link>
+                <div className="flex gap-4 justify-center">
+                  <Link href="/register" className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
+                    {t.register}
+                  </Link>
+                  <Link href="/login" className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors border-2 border-indigo-600">
+                    {t.login}
+                  </Link>
+                </div>
               </>
             )}
           </div>
