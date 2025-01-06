@@ -2,6 +2,78 @@
 
 import { useState, useEffect } from 'react';
 
+// Add translations
+const translations = {
+  tr: {
+    title: 'Çalışma Takibi',
+    status: {
+      working: 'Çalışıyor',
+      break: 'Mola',
+      notStarted: 'Henüz Başlamadı'
+    },
+    buttons: {
+      startWork: 'Çalışmaya Başla',
+      takeBreak: 'Mola Ver',
+      continueWork: 'Çalışmaya Devam Et',
+      finishWork: 'Çalışmayı Bitir',
+      newWork: 'Yeni Çalışmaya Başla',
+      report: 'Rapor',
+      yes: 'Evet, Bitir',
+      cancel: 'İptal'
+    },
+    labels: {
+      totalWork: 'Toplam Çalışma',
+      totalBreak: 'Toplam Mola',
+      workSession: 'Çalışma',
+      breakSession: 'Mola',
+      start: 'Başlangıç',
+      end: 'Bitiş',
+      ongoing: 'Devam Ediyor',
+      currentReport: 'Mevcut Rapor',
+      workReport: 'Çalışma Raporu',
+      detailedSessions: 'Detaylı Oturumlar'
+    },
+    confirmModal: {
+      title: 'Çalışmayı Bitir',
+      message: 'Çalışmayı bitirmek istediğinize emin misiniz? Bu işlem geri alınamaz ve mevcut çalışma oturumunuz sonlandırılacaktır.'
+    }
+  },
+  en: {
+    title: 'Work Tracker',
+    status: {
+      working: 'Working',
+      break: 'Break',
+      notStarted: 'Not Started'
+    },
+    buttons: {
+      startWork: 'Start Working',
+      takeBreak: 'Take Break',
+      continueWork: 'Continue Working',
+      finishWork: 'Finish Work',
+      newWork: 'Start New Work',
+      report: 'Report',
+      yes: 'Yes, Finish',
+      cancel: 'Cancel'
+    },
+    labels: {
+      totalWork: 'Total Work',
+      totalBreak: 'Total Break',
+      workSession: 'Work',
+      breakSession: 'Break',
+      start: 'Start',
+      end: 'End',
+      ongoing: 'Ongoing',
+      currentReport: 'Current Report',
+      workReport: 'Work Report',
+      detailedSessions: 'Detailed Sessions'
+    },
+    confirmModal: {
+      title: 'Finish Work',
+      message: 'Are you sure you want to finish working? This action cannot be undone and your current work session will be ended.'
+    }
+  }
+};
+
 interface WorkSession {
   startTime: number;
   endTime: number | null;
@@ -28,18 +100,39 @@ const initialState: TimerState = {
   isFinished: false,
 };
 
+interface LanguageButtonProps {
+  currentLang: 'tr' | 'en';
+  onLanguageChange: (lang: 'tr' | 'en') => void;
+}
+
+function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) {
+  return (
+    <button
+      onClick={() => onLanguageChange(currentLang === 'tr' ? 'en' : 'tr')}
+      className="flex items-center gap-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium border border-gray-200 shadow-sm text-sm"
+      title={currentLang === 'tr' ? 'Switch to English' : 'Türkçe\'ye geç'}
+    >
+      <span className="w-5 h-5 flex items-center justify-center">
+        {currentLang === 'tr' ? '🇹🇷' : '🇬🇧'}
+      </span>
+      <span>{currentLang === 'tr' ? 'EN' : 'TR'}</span>
+    </button>
+  );
+}
+
 interface ReportModalProps {
   timerState: TimerState;
   onClose: () => void;
   formatDateTime: (timestamp: number) => string;
+  t: typeof translations.tr | typeof translations.en;
 }
 
-function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) {
+function ReportModal({ timerState, onClose, formatDateTime, t }: ReportModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Mevcut Rapor</h2>
+          <h2 className="text-2xl font-bold text-gray-800">{t.labels.currentReport}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -51,7 +144,7 @@ function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
             <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
-              <span>⏱️</span> Toplam Çalışma
+              <span>⏱️</span> {t.labels.totalWork}
             </h3>
             <div className="text-3xl font-mono font-bold text-green-600">
               {new Date(timerState.workTime).toISOString().substr(11, 8)}
@@ -60,7 +153,7 @@ function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) 
 
           <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
             <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
-              <span>☕</span> Toplam Mola
+              <span>☕</span> {t.labels.totalBreak}
             </h3>
             <div className="text-3xl font-mono font-bold text-yellow-600">
               {new Date(timerState.breakTime).toISOString().substr(11, 8)}
@@ -70,7 +163,7 @@ function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) 
 
         <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
           <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
-            <span>📊</span> Detaylı Oturumlar
+            <span>📊</span> {t.labels.detailedSessions}
           </h3>
           <div className="space-y-4">
             {timerState.sessions.map((session, index) => (
@@ -84,7 +177,7 @@ function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) 
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-semibold text-lg text-gray-800">
-                    {session.type === 'work' ? '🎯 Çalışma' : '☕ Mola'} #{index + 1}
+                    {session.type === 'work' ? `🎯 ${t.labels.workSession}` : `☕ ${t.labels.breakSession}`} #{index + 1}
                   </div>
                   {session.endTime && (
                     <div className={`font-mono font-bold ${
@@ -96,12 +189,12 @@ function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) 
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
                   <div className="space-y-1">
-                    <div className="font-medium">Başlangıç</div>
+                    <div className="font-medium">{t.labels.start}</div>
                     <div>{formatDateTime(session.startTime)}</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="font-medium">Bitiş</div>
-                    <div>{session.endTime ? formatDateTime(session.endTime) : 'Devam Ediyor'}</div>
+                    <div className="font-medium">{t.labels.end}</div>
+                    <div>{session.endTime ? formatDateTime(session.endTime) : t.labels.ongoing}</div>
                   </div>
                 </div>
               </div>
@@ -116,28 +209,29 @@ function ReportModal({ timerState, onClose, formatDateTime }: ReportModalProps) 
 interface ConfirmModalProps {
   onConfirm: () => void;
   onCancel: () => void;
+  t: typeof translations.tr | typeof translations.en;
 }
 
-function ConfirmModal({ onConfirm, onCancel }: ConfirmModalProps) {
+function ConfirmModal({ onConfirm, onCancel, t }: ConfirmModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Çalışmayı Bitir</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">{t.confirmModal.title}</h2>
         <p className="text-gray-600 mb-6">
-          Çalışmayı bitirmek istediğinize emin misiniz? Bu işlem geri alınamaz ve mevcut çalışma oturumunuz sonlandırılacaktır.
+          {t.confirmModal.message}
         </p>
         <div className="flex gap-4">
           <button
             onClick={onConfirm}
             className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
-            Evet, Bitir
+            {t.buttons.yes}
           </button>
           <button
             onClick={onCancel}
             className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
           >
-            İptal
+            {t.buttons.cancel}
           </button>
         </div>
       </div>
@@ -150,6 +244,10 @@ export default function Home() {
   const [displayTime, setDisplayTime] = useState('00:00:00');
   const [showReport, setShowReport] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
+
+  // Get translations for current language
+  const t = translations[language];
 
   useEffect(() => {
     try {
@@ -202,7 +300,7 @@ export default function Home() {
   }, [timerState.workTime, timerState.breakTime, timerState.isBreak]);
 
   const formatDateTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString('tr-TR', {
+    return new Date(timestamp).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -297,165 +395,180 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-4xl">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">
-            Çalışma Takibi
-          </h1>
-          {!timerState.isFinished && timerState.sessions.length > 0 && (
-            <button
-              onClick={() => setShowReport(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all duration-200 font-medium border border-indigo-100 shadow-sm"
-              title="Raporu Görüntüle"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <path d="M14 2v6h6" />
-                <path d="M16 13H8" />
-                <path d="M16 17H8" />
-                <path d="M10 9H8" />
-              </svg>
-              Rapor
-            </button>
-          )}
-        </div>
-        
-        {!timerState.isFinished ? (
-          <>
-            <div className="text-center mb-8">
-              <div className="text-8xl font-mono font-bold mb-4 text-gray-900">
-                {displayTime}
-              </div>
-              <div className="text-lg text-gray-600 mb-2">
-                {timerState.isWorking ? 'Çalışıyor' : timerState.isBreak ? 'Mola' : 'Henüz Başlamadı'}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {!timerState.isWorking && !timerState.isBreak && (
+    <div className="min-h-screen bg-gray-100">
+      {/* Navbar */}
+      <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <h1 className="text-2xl font-bold text-gray-800">
+              {t.title}
+            </h1>
+            <div className="flex items-center gap-4">
+              {!timerState.isFinished && timerState.sessions.length > 0 && (
                 <button
-                  onClick={startWork}
-                  className="w-full py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg"
+                  onClick={() => setShowReport(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all duration-200 font-medium border border-indigo-100 shadow-sm"
+                  title={t.buttons.report}
                 >
-                  Çalışmaya Başla
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 2v6h6" />
+                    <path d="M16 13H8" />
+                    <path d="M16 17H8" />
+                    <path d="M10 9H8" />
+                  </svg>
+                  {t.buttons.report}
                 </button>
               )}
-
-              {timerState.isWorking && (
-                <button
-                  onClick={startBreak}
-                  className="w-full py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-lg"
-                >
-                  Mola Ver
-                </button>
-              )}
-
-              {timerState.isBreak && (
-                <button
-                  onClick={startWork}
-                  className="w-full py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg"
-                >
-                  Çalışmaya Devam Et
-                </button>
-              )}
-
-              {(timerState.isWorking || timerState.isBreak) && (
-                <button
-                  onClick={handleFinishWork}
-                  className="w-full py-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-lg"
-                >
-                  Çalışmayı Bitir
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-lg text-gray-600">
-              <div>Toplam Çalışma: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
-              <div>Toplam Mola: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-gray-800">Çalışma Raporu</h2>
-              <button
-                onClick={resetTimers}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base flex items-center gap-2"
-              >
-                <span>🔄</span> Yeni Çalışmaya Başla
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                  <span>⏱️</span> Toplam Çalışma
-                </h3>
-                <div className="text-3xl font-mono font-bold text-green-600">
-                  {new Date(timerState.workTime).toISOString().substr(11, 8)}
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                  <span>☕</span> Toplam Mola
-                </h3>
-                <div className="text-3xl font-mono font-bold text-yellow-600">
-                  {new Date(timerState.breakTime).toISOString().substr(11, 8)}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
-              <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
-                <span>📊</span> Detaylı Oturumlar
-              </h3>
-              <div className="space-y-4">
-                {timerState.sessions.map((session, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-4 rounded-lg border ${
-                      session.type === 'work' 
-                        ? 'border-green-200 bg-green-50' 
-                        : 'border-yellow-200 bg-yellow-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="font-semibold text-lg text-gray-800">
-                        {session.type === 'work' ? '🎯 Çalışma' : '☕ Mola'} #{index + 1}
-                      </div>
-                      {session.endTime && (
-                        <div className={`font-mono font-bold ${
-                          session.type === 'work' ? 'text-green-600' : 'text-yellow-600'
-                        }`}>
-                          {new Date(session.endTime - session.startTime).toISOString().substr(11, 8)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
-                      <div className="space-y-1">
-                        <div className="font-medium">Başlangıç</div>
-                        <div>{formatDateTime(session.startTime)}</div>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="font-medium">Bitiş</div>
-                        <div>{session.endTime ? formatDateTime(session.endTime) : 'Devam Ediyor'}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <LanguageButton
+                currentLang={language}
+                onLanguageChange={setLanguage}
+              />
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="pt-24 pb-8 px-4 flex flex-col items-center">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-4xl">
+          {!timerState.isFinished ? (
+            <>
+              <div className="text-center mb-8">
+                <div className="text-8xl font-mono font-bold mb-4 text-gray-900">
+                  {displayTime}
+                </div>
+                <div className="text-lg text-gray-600 mb-2">
+                  {timerState.isWorking ? t.status.working : timerState.isBreak ? t.status.break : t.status.notStarted}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {!timerState.isWorking && !timerState.isBreak && (
+                  <button
+                    onClick={startWork}
+                    className="w-full py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg"
+                  >
+                    {t.buttons.startWork}
+                  </button>
+                )}
+
+                {timerState.isWorking && (
+                  <button
+                    onClick={startBreak}
+                    className="w-full py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-lg"
+                  >
+                    {t.buttons.takeBreak}
+                  </button>
+                )}
+
+                {timerState.isBreak && (
+                  <button
+                    onClick={startWork}
+                    className="w-full py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg"
+                  >
+                    {t.buttons.continueWork}
+                  </button>
+                )}
+
+                {(timerState.isWorking || timerState.isBreak) && (
+                  <button
+                    onClick={handleFinishWork}
+                    className="w-full py-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-lg"
+                  >
+                    {t.buttons.finishWork}
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-lg text-gray-600">
+                <div>{t.labels.totalWork}: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
+                <div>{t.labels.totalBreak}: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-gray-800">{t.labels.workReport}</h2>
+                <button
+                  onClick={resetTimers}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base flex items-center gap-2"
+                >
+                  <span>🔄</span> {t.buttons.newWork}
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>⏱️</span> {t.labels.totalWork}
+                  </h3>
+                  <div className="text-3xl font-mono font-bold text-green-600">
+                    {new Date(timerState.workTime).toISOString().substr(11, 8)}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>☕</span> {t.labels.totalBreak}
+                  </h3>
+                  <div className="text-3xl font-mono font-bold text-yellow-600">
+                    {new Date(timerState.breakTime).toISOString().substr(11, 8)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+                <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
+                  <span>📊</span> {t.labels.detailedSessions}
+                </h3>
+                <div className="space-y-4">
+                  {timerState.sessions.map((session, index) => (
+                    <div 
+                      key={index} 
+                      className={`p-4 rounded-lg border ${
+                        session.type === 'work' 
+                          ? 'border-green-200 bg-green-50' 
+                          : 'border-yellow-200 bg-yellow-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="font-semibold text-lg text-gray-800">
+                          {session.type === 'work' ? `🎯 ${t.labels.workSession}` : `☕ ${t.labels.breakSession}`} #{index + 1}
+                        </div>
+                        {session.endTime && (
+                          <div className={`font-mono font-bold ${
+                            session.type === 'work' ? 'text-green-600' : 'text-yellow-600'
+                          }`}>
+                            {new Date(session.endTime - session.startTime).toISOString().substr(11, 8)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                        <div className="space-y-1">
+                          <div className="font-medium">{t.labels.start}</div>
+                          <div>{formatDateTime(session.startTime)}</div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="font-medium">{t.labels.end}</div>
+                          <div>{session.endTime ? formatDateTime(session.endTime) : t.labels.ongoing}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
 
       {showReport && (
         <ReportModal
           timerState={timerState}
           onClose={() => setShowReport(false)}
           formatDateTime={formatDateTime}
+          t={t}
         />
       )}
 
@@ -463,8 +576,9 @@ export default function Home() {
         <ConfirmModal
           onConfirm={confirmFinishWork}
           onCancel={() => setShowConfirm(false)}
+          t={t}
         />
       )}
-    </main>
+    </div>
   );
 }
