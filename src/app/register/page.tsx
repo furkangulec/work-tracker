@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Footer from '../components/Footer';
 
 const translations = {
   tr: {
@@ -168,6 +169,8 @@ export default function Register() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 } 
