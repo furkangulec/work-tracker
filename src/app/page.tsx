@@ -128,7 +128,6 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -143,7 +142,7 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
   const currentLanguage = languages.find(lang => lang.code === currentLang);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium border border-gray-200 shadow-sm text-sm"
@@ -163,29 +162,31 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-          {languages.map((language) => (
-            <button
-              key={language.code}
-              onClick={() => {
-                onLanguageChange(language.code);
-                setIsOpen(false);
-              }}
-              className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors ${
-                currentLang === language.code ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'
-              }`}
-            >
-              <span className="w-5 h-5 flex items-center justify-center">
-                {language.flag}
-              </span>
-              <span>{language.name}</span>
-              {currentLang === language.code && (
-                <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-          ))}
+        <div className="absolute right-0 mt-2 py-2 bg-white rounded-lg shadow-xl border border-gray-200 sm:w-48 w-auto">
+          <div className="flex sm:flex-col">
+            {languages.map((language) => (
+              <button
+                key={language.code}
+                onClick={() => {
+                  onLanguageChange(language.code);
+                  setIsOpen(false);
+                }}
+                className={`px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                  currentLang === language.code ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'
+                }`}
+              >
+                <span className="w-5 h-5 flex items-center justify-center">
+                  {language.flag}
+                </span>
+                <span>{language.name}</span>
+                {currentLang === language.code && (
+                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -544,13 +545,13 @@ export default function Home() {
       />
 
       {/* Navbar */}
-      <nav className="bg-white/90 backdrop-blur-sm shadow-md fixed top-0 left-0 right-0 z-10">
+      <nav className="bg-white/90 backdrop-blur-sm shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-gray-800">
+          <div className="flex items-center justify-between h-16">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               {t.title}
             </h1>
-            <div className="flex items-center gap-4">
+            <div>
               <LanguageButton
                 currentLang={language}
                 onLanguageChange={setLanguage}
@@ -561,15 +562,15 @@ export default function Home() {
       </nav>
 
       {/* Main Content */}
-      <main className="pt-24 pb-8 px-4 flex flex-col items-center flex-grow relative z-10">
-        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-4xl">
+      <main className="pt-20 pb-8 px-4 flex flex-col items-center flex-grow relative z-10">
+        <div className="bg-white rounded-lg shadow-xl p-4 sm:p-8 w-full max-w-4xl">
           {!timerState.isFinished ? (
             <>
               <div className="text-center mb-8">
-                <div className="text-8xl font-mono font-bold mb-4 text-gray-900">
+                <div className="text-6xl sm:text-8xl md:text-9xl font-mono font-bold mb-4 text-gray-900 break-all sm:break-normal">
                   {displayTime}
                 </div>
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-lg font-medium ${
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-base sm:text-lg font-medium ${
                   timerState.isWorking 
                     ? 'bg-green-100 text-green-800 border border-green-200' 
                     : timerState.isBreak 
@@ -591,7 +592,7 @@ export default function Home() {
                 {!timerState.isWorking && !timerState.isBreak && (
                   <button
                     onClick={startWork}
-                    className="w-full py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg"
+                    className="w-full py-3 sm:py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-base sm:text-lg"
                   >
                     {t.buttons.startWork}
                   </button>
@@ -600,7 +601,7 @@ export default function Home() {
                 {timerState.isWorking && (
                   <button
                     onClick={startBreak}
-                    className="w-full py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-lg"
+                    className="w-full py-3 sm:py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-base sm:text-lg"
                   >
                     {t.buttons.takeBreak}
                   </button>
@@ -609,7 +610,7 @@ export default function Home() {
                 {timerState.isBreak && (
                   <button
                     onClick={startWork}
-                    className="w-full py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg"
+                    className="w-full py-3 sm:py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base sm:text-lg"
                   >
                     {t.buttons.continueWork}
                   </button>
@@ -618,7 +619,7 @@ export default function Home() {
                 {(timerState.isWorking || timerState.isBreak) && (
                   <button
                     onClick={handleFinishWork}
-                    className="w-full py-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-lg"
+                    className="w-full py-3 sm:py-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-base sm:text-lg"
                   >
                     {t.buttons.finishWork}
                   </button>
@@ -626,9 +627,9 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-4 text-lg text-gray-600">
-                  <div>{t.labels.totalWork}: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
-                  <div>{t.labels.totalBreak}: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base sm:text-lg text-gray-600">
+                  <div className="text-center sm:text-left">{t.labels.totalWork}: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
+                  <div className="text-center sm:text-left">{t.labels.totalBreak}: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
                 </div>
 
                 {timerState.sessions.length > 0 && (
