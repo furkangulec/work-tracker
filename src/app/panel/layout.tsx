@@ -9,19 +9,22 @@ const translations = {
     menu: {
       dashboard: 'Panel',
     },
-    title: 'Kullanıcı Paneli'
+    title: 'Kullanıcı Paneli',
+    returnToWork: 'Çalışmaya Dön'
   },
   en: {
     menu: {
       dashboard: 'Dashboard',
     },
-    title: 'User Panel'
+    title: 'User Panel',
+    returnToWork: 'Return to Work'
   },
   ja: {
     menu: {
       dashboard: 'ダッシュボード',
     },
-    title: 'ユーザーパネル'
+    title: 'ユーザーパネル',
+    returnToWork: '作業に戻る'
   }
 };
 
@@ -55,6 +58,15 @@ export default function PanelLayout({
             <h1 className="text-xl font-semibold text-gray-800">{t.title}</h1>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-1">
+            <Link
+              href="/"
+              className="flex items-center gap-3 px-3 py-2 mb-4 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="font-medium">{t.returnToWork}</span>
+            </Link>
             {menuItems.map((item) => {
               const isActive = pathname === item.href;
               return (
