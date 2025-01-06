@@ -8,6 +8,10 @@ const translations = {
   tr: {
     title: 'Çalışma Takibi',
     register: 'Kayıt Ol',
+    promo: {
+      title: 'Çalışmalarını Kaydet!',
+      description: 'Kayıt olarak tüm çalışma verilerini güvenle saklayabilir, geçmiş çalışmalarını görüntüleyebilir ve detaylı istatistikler elde edebilirsin.'
+    },
     status: {
       working: 'Çalışıyor',
       break: 'Mola',
@@ -43,6 +47,10 @@ const translations = {
   en: {
     title: 'Work Tracker',
     register: 'Register',
+    promo: {
+      title: 'Save Your Work!',
+      description: 'By registering, you can securely store all your work data, view your past work sessions, and get detailed statistics.'
+    },
     status: {
       working: 'Working',
       break: 'Break',
@@ -78,6 +86,10 @@ const translations = {
   ja: {
     title: '作業トラッカー',
     register: '登録',
+    promo: {
+      title: '作業を記録しよう！',
+      description: '登録すると、すべての作業データを安全に保存し、過去の作業セッションを表示し、詳細な統計を取得できます。'
+    },
     status: {
       working: '作業中',
       break: '休憩中',
@@ -594,13 +606,7 @@ export default function Home() {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               {t.title}
             </h1>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/register"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
-              >
-                {t.register}
-              </Link>
+            <div>
               <LanguageButton
                 currentLang={language}
                 onLanguageChange={setLanguage}
@@ -772,6 +778,24 @@ export default function Home() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Registration Promo */}
+        <div className="mt-8 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg shadow-lg p-6 sm:p-8 w-full max-w-4xl border border-indigo-100">
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-indigo-900 mb-4">
+              {t.promo.title}
+            </h2>
+            <p className="text-lg text-indigo-700 mb-8 max-w-2xl mx-auto">
+              {t.promo.description}
+            </p>
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              {t.register}
+            </Link>
+          </div>
         </div>
       </main>
 
