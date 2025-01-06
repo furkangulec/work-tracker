@@ -529,9 +529,22 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gray-100 flex flex-col relative">
+      {/* Squared notebook background */}
+      <div 
+        className="absolute inset-0 pointer-events-none" 
+        style={{
+          backgroundImage: `
+            linear-gradient(#e5e7eb 1px, transparent 1px),
+            linear-gradient(90deg, #e5e7eb 1px, transparent 1px)
+          `,
+          backgroundSize: '24px 24px',
+          opacity: 0.2
+        }}
+      />
+
       {/* Navbar */}
-      <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-10">
+      <nav className="bg-white/90 backdrop-blur-sm shadow-md fixed top-0 left-0 right-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-2xl font-bold text-gray-800">
@@ -548,7 +561,7 @@ export default function Home() {
       </nav>
 
       {/* Main Content */}
-      <main className="pt-24 pb-8 px-4 flex flex-col items-center flex-grow">
+      <main className="pt-24 pb-8 px-4 flex flex-col items-center flex-grow relative z-10">
         <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-4xl">
           {!timerState.isFinished ? (
             <>
