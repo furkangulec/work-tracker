@@ -476,22 +476,6 @@ export default function Home() {
               {t.title}
             </h1>
             <div className="flex items-center gap-4">
-              {!timerState.isFinished && timerState.sessions.length > 0 && (
-                <button
-                  onClick={() => setShowReport(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all duration-200 font-medium border border-indigo-100 shadow-sm"
-                  title={t.buttons.report}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6" />
-                    <path d="M16 13H8" />
-                    <path d="M16 17H8" />
-                    <path d="M10 9H8" />
-                  </svg>
-                  {t.buttons.report}
-                </button>
-              )}
               <LanguageButton
                 currentLang={language}
                 onLanguageChange={setLanguage}
@@ -553,9 +537,27 @@ export default function Home() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-lg text-gray-600">
-                <div>{t.labels.totalWork}: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
-                <div>{t.labels.totalBreak}: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4 text-lg text-gray-600">
+                  <div>{t.labels.totalWork}: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
+                  <div>{t.labels.totalBreak}: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
+                </div>
+
+                {timerState.sessions.length > 0 && (
+                  <button
+                    onClick={() => setShowReport(true)}
+                    className="flex items-center justify-center gap-2 py-3 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all duration-200 font-medium border border-indigo-100"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M16 13H8" />
+                      <path d="M16 17H8" />
+                      <path d="M10 9H8" />
+                    </svg>
+                    {t.buttons.report}
+                  </button>
+                )}
               </div>
             </>
           ) : (
