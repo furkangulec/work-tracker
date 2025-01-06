@@ -19,7 +19,7 @@ const translations = {
 };
 
 export default function Register() {
-  const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
+  const [language] = useState<'tr' | 'en' | 'ja'>('tr');
   const t = translations[language];
 
   return (

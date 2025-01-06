@@ -367,7 +367,7 @@ function ConfirmModal({ onConfirm, onCancel, t }: ConfirmModalProps) {
   );
 }
 
-function Footer({ t }: { t: typeof translations.tr | typeof translations.en | typeof translations.ja }) {
+function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -461,7 +461,7 @@ export default function Home() {
 
     if (timerState.isWorking || timerState.isBreak) {
       interval = setInterval(() => {
-        const now = Date.now();
+        const currentTime = Date.now();
         
         setTimerState(prev => {
           const newState = {
@@ -781,17 +781,17 @@ export default function Home() {
         </div>
 
         {/* Registration Promo */}
-        <div className="mt-8 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg shadow-lg p-6 sm:p-8 w-full max-w-4xl border border-indigo-100">
+        <div className="mt-8 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-4xl border border-indigo-100">
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-indigo-900 mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-indigo-900 mb-3">
               {t.promo.title}
             </h2>
-            <p className="text-lg text-indigo-700 mb-8 max-w-2xl mx-auto">
+            <p className="text-base text-indigo-700 mb-6 max-w-2xl mx-auto">
               {t.promo.description}
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               {t.register}
             </Link>
@@ -799,7 +799,7 @@ export default function Home() {
         </div>
       </main>
 
-      <Footer t={t} />
+      <Footer />
 
       {showReport && (
         <ReportModal
