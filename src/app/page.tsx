@@ -159,6 +159,7 @@ interface TimerState {
   lastStartTime: number | null;
   sessions: WorkSession[];
   isFinished: boolean;
+  workId?: string; // MongoDB work document ID
 }
 
 const initialState: TimerState = {
@@ -480,8 +481,70 @@ export default function Home() {
     });
   };
 
-  const startWork = () => {
+  const startWork = async () => {
     const currentTime = Date.now();
+
+    if (user) {
+      try {
+        // If there are existing sessions and the last one is a break, continue the work
+        if (timerState.sessions.length > 0 && timerState.sessions[timerState.sessions.length - 1].type === 'break') {
+          // Continue work by updating existing work session
+          const response = await fetch('/api/work/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              workId: timerState.workId,
+              action: 'continue'
+            }),
+          });
+          const data = await response.json();
+
+          if (!data.success) {
+            throw new Error(data.error);
+          }
+
+          setTimerState(prev => ({
+            ...prev,
+            isWorking: true,
+            isBreak: false,
+            lastStartTime: currentTime,
+            sessions: data.work.sessions,
+          }));
+        } else {
+          // Start new work session
+          const response = await fetch('/api/work/start', {
+            method: 'POST',
+          });
+          const data = await response.json();
+
+          if (!data.success) {
+            throw new Error(data.error);
+          }
+
+          setTimerState(prev => ({
+            ...prev,
+            isWorking: true,
+            isBreak: false,
+            lastStartTime: currentTime,
+            workId: data.workId,
+            sessions: data.work.sessions,
+            isFinished: false,
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to start work:', error);
+        // Fallback to localStorage if API fails
+        startWorkLocally(currentTime);
+      }
+    } else {
+      // Use localStorage for guests
+      startWorkLocally(currentTime);
+    }
+  };
+
+  const startWorkLocally = (currentTime: number) => {
     setTimerState(prev => {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
@@ -504,8 +567,47 @@ export default function Home() {
     });
   };
 
-  const startBreak = () => {
+  const startBreak = async () => {
     const currentTime = Date.now();
+
+    if (user && timerState.workId) {
+      try {
+        // Update work in MongoDB
+        const response = await fetch('/api/work/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            workId: timerState.workId,
+            action: 'break'
+          }),
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+
+        setTimerState(prev => ({
+          ...prev,
+          isWorking: false,
+          isBreak: true,
+          lastStartTime: currentTime,
+          sessions: data.work.sessions,
+        }));
+      } catch (error) {
+        console.error('Failed to start break:', error);
+        // Fallback to localStorage if API fails
+        startBreakLocally(currentTime);
+      }
+    } else {
+      // Use localStorage for guests
+      startBreakLocally(currentTime);
+    }
+  };
+
+  const startBreakLocally = (currentTime: number) => {
     setTimerState(prev => {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
@@ -527,8 +629,48 @@ export default function Home() {
     });
   };
 
-  const finishWork = () => {
+  const finishWork = async () => {
     const currentTime = Date.now();
+
+    if (user && timerState.workId) {
+      try {
+        // Finish work in MongoDB
+        const response = await fetch('/api/work/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            workId: timerState.workId,
+            action: 'finish'
+          }),
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+
+        setTimerState(prev => ({
+          ...prev,
+          isWorking: false,
+          isBreak: false,
+          lastStartTime: null,
+          sessions: data.work.sessions,
+          isFinished: true,
+        }));
+      } catch (error) {
+        console.error('Failed to finish work:', error);
+        // Fallback to localStorage if API fails
+        finishWorkLocally(currentTime);
+      }
+    } else {
+      // Use localStorage for guests
+      finishWorkLocally(currentTime);
+    }
+  };
+
+  const finishWorkLocally = (currentTime: number) => {
     setTimerState(prev => {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
