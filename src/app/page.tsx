@@ -71,6 +71,40 @@ const translations = {
       title: 'Finish Work',
       message: 'Are you sure you want to finish working? This action cannot be undone and your current work session will be ended.'
     }
+  },
+  ja: {
+    title: '作業トラッカー',
+    status: {
+      working: '作業中',
+      break: '休憩中',
+      notStarted: '未開始'
+    },
+    buttons: {
+      startWork: '作業開始',
+      takeBreak: '休憩する',
+      continueWork: '作業再開',
+      finishWork: '作業終了',
+      newWork: '新規作業開始',
+      report: 'レポート',
+      yes: 'はい、終了します',
+      cancel: 'キャンセル'
+    },
+    labels: {
+      totalWork: '総作業時間',
+      totalBreak: '総休憩時間',
+      workSession: '作業',
+      breakSession: '休憩',
+      start: '開始',
+      end: '終了',
+      ongoing: '進行中',
+      currentReport: '現在のレポート',
+      workReport: '作業レポート',
+      detailedSessions: '詳細セッション'
+    },
+    confirmModal: {
+      title: '作業終了',
+      message: '作業を終了してもよろしいですか？この操作は取り消せず、現在の作業セッションが終了します。'
+    }
   }
 };
 
@@ -101,12 +135,12 @@ const initialState: TimerState = {
 };
 
 interface LanguageButtonProps {
-  currentLang: 'tr' | 'en';
-  onLanguageChange: (lang: 'tr' | 'en') => void;
+  currentLang: 'tr' | 'en' | 'ja';
+  onLanguageChange: (lang: 'tr' | 'en' | 'ja') => void;
 }
 
 interface LanguageOption {
-  code: 'tr' | 'en';
+  code: 'tr' | 'en' | 'ja';
   flag: string;
   name: string;
 }
@@ -121,6 +155,11 @@ const languages: LanguageOption[] = [
     code: 'en',
     flag: '🇬🇧',
     name: 'English'
+  },
+  {
+    code: 'ja',
+    flag: '🇯🇵',
+    name: '日本語'
   }
 ];
 
@@ -162,8 +201,8 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 py-2 bg-white rounded-lg shadow-xl border border-gray-200 sm:w-48 w-auto">
-          <div className="flex sm:flex-col">
+        <div className="absolute right-0 mt-2 py-2 bg-white rounded-lg shadow-xl border border-gray-200 w-48">
+          <div className="flex flex-col">
             {languages.map((language) => (
               <button
                 key={language.code}
@@ -171,7 +210,7 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
                   onLanguageChange(language.code);
                   setIsOpen(false);
                 }}
-                className={`px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                className={`px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors ${
                   currentLang === language.code ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'
                 }`}
               >
@@ -197,7 +236,7 @@ interface ReportModalProps {
   timerState: TimerState;
   onClose: () => void;
   formatDateTime: (timestamp: number) => string;
-  t: typeof translations.tr | typeof translations.en;
+  t: typeof translations.tr | typeof translations.en | typeof translations.ja;
 }
 
 function ReportModal({ timerState, onClose, formatDateTime, t }: ReportModalProps) {
@@ -282,7 +321,7 @@ function ReportModal({ timerState, onClose, formatDateTime, t }: ReportModalProp
 interface ConfirmModalProps {
   onConfirm: () => void;
   onCancel: () => void;
-  t: typeof translations.tr | typeof translations.en;
+  t: typeof translations.tr | typeof translations.en | typeof translations.ja;
 }
 
 function ConfirmModal({ onConfirm, onCancel, t }: ConfirmModalProps) {
@@ -312,13 +351,13 @@ function ConfirmModal({ onConfirm, onCancel, t }: ConfirmModalProps) {
   );
 }
 
-function Footer({ t }: { t: typeof translations.tr | typeof translations.en }) {
+function Footer({ t }: { t: typeof translations.tr | typeof translations.en | typeof translations.ja }) {
   return (
     <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-gray-500">
-            © {new Date().getFullYear()} Work Tracker
+            © {new Date().getFullYear()} Work Tracker - Furkan Güleç
           </div>
           <div className="flex items-center gap-6">
             <a
@@ -379,7 +418,7 @@ export default function Home() {
   const [displayTime, setDisplayTime] = useState('00:00:00');
   const [showReport, setShowReport] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
+  const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
 
   // Get translations for current language
   const t = translations[language];
