@@ -14,10 +14,8 @@ const translations = {
     workCard: {
       date: 'Tarih',
       duration: 'Süre',
-      type: {
-        work: 'Çalışma',
-        break: 'Mola'
-      },
+      work: 'Çalışma',
+      ongoing: 'Devam Ediyor',
       viewDetails: 'Detayları Gör'
     }
   },
@@ -29,10 +27,8 @@ const translations = {
     workCard: {
       date: 'Date',
       duration: 'Duration',
-      type: {
-        work: 'Work',
-        break: 'Break'
-      },
+      work: 'Work',
+      ongoing: 'Ongoing',
       viewDetails: 'View Details'
     }
   },
@@ -44,10 +40,8 @@ const translations = {
     workCard: {
       date: '日付',
       duration: '期間',
-      type: {
-        work: '作業',
-        break: '休憩'
-      },
+      work: '作業',
+      ongoing: '進行中',
       viewDetails: '詳細を見る'
     }
   }
@@ -112,7 +106,7 @@ export default function Works() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
             <h2 className="mt-4 text-lg text-gray-600">{t.loading}</h2>
@@ -125,7 +119,7 @@ export default function Works() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
               <p>{error}</p>
@@ -152,7 +146,7 @@ export default function Works() {
       />
 
       <div className="py-12 relative z-10">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
           </div>
@@ -163,20 +157,23 @@ export default function Works() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {works.map((work) => (
+              {works.map((work, index) => (
                 <div
                   key={work._id?.toString()}
                   className="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow"
                 >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        work.sessions[work.sessions.length - 1]?.type === 'work' 
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {t.workCard.type[work.sessions[work.sessions.length - 1]?.type || 'work']}
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          {t.workCard.work} #{works.length - index}
+                        </span>
+                        {!work.isFinished && (
+                          <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                            {t.workCard.ongoing}
+                          </span>
+                        )}
+                      </div>
                       <Link
                         href={`/panel/works/${work._id}`}
                         className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
