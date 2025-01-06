@@ -368,12 +368,14 @@ function ConfirmModal({ onConfirm, onCancel, t }: ConfirmModalProps) {
 }
 
 function Footer() {
+  const currentYear = new Date().getFullYear();
+  
   return (
     <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-gray-500">
-            © {new Date().getFullYear()} Work Tracker - Furkan Güleç
+            © {currentYear} Work Tracker - Furkan Güleç
           </div>
           <div className="flex items-center gap-6">
             <a
@@ -461,8 +463,6 @@ export default function Home() {
 
     if (timerState.isWorking || timerState.isBreak) {
       interval = setInterval(() => {
-        const currentTime = Date.now();
-        
         setTimerState(prev => {
           const newState = {
             ...prev,
