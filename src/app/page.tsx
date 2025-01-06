@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Footer from './components/Footer';
 import { verifyJwt } from '@/lib/jwt';
+import { getJwtFromCookie } from '@/lib/jwt';
 
 // Add translations
 const translations = {
@@ -397,23 +398,24 @@ export default function Home() {
 
   useEffect(() => {
     // Check if user is logged in by verifying JWT token from cookie
-    const cookies = document.cookie;
-    console.log('Cookies:', cookies); // Debug log
-
-    const token = cookies.match(/token=([^;]+)/)?.[1];
-    console.log('Found token:', token); // Debug log
-    
-    if (token) {
-      const userData = verifyJwt(token);
-      console.log('Verified user data:', userData); // Debug log
-      if (userData) {
-        setUser(userData);
-      } else {
-        console.log('Token verification failed'); // Debug log
+    async function checkAuth() {
+      try {
+        // Make a request to an API endpoint that can read the httpOnly cookie
+        const response = await fetch('/api/auth/check');
+        const data = await response.json();
+        
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setUser(null);
       }
-    } else {
-      console.log('No token found in cookies'); // Debug log
     }
+
+    checkAuth();
   }, []); // Run only once on component mount
 
   useEffect(() => {
