@@ -195,13 +195,11 @@ export default function Login() {
       }
 
       setSuccess(true);
-      // Store user info in localStorage
-      localStorage.setItem('user', JSON.stringify({ email }));
       
       // Redirect to home page after successful login
       setTimeout(() => {
         window.location.href = '/';
-      }, 2000);
+      }, 1000);
 
     } catch (err) {
       setError(t.errors.serverError);

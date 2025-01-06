@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Footer from './components/Footer';
+import { verifyJwt } from '@/lib/jwt';
 
 // Add translations
 const translations = {
@@ -14,7 +15,7 @@ const translations = {
       description: 'Kayıt olarak tüm çalışma verilerini güvenle saklayabilir, geçmiş çalışmalarını görüntüleyebilir ve detaylı istatistikler elde edebilirsin.'
     },
     welcome: {
-      title: 'Hoş Geldin!',
+      title: 'Hoş Geldin, {name}!',
       description: 'Çalışma verilerini otomatik olarak kaydediyoruz. İstediğin zaman geçmiş çalışmalarını görüntüleyebilirsin.'
     },
     status: {
@@ -57,7 +58,7 @@ const translations = {
       description: 'Register to securely store all your work data, view your past work sessions, and get detailed statistics.'
     },
     welcome: {
-      title: 'Welcome!',
+      title: 'Welcome, {name}!',
       description: 'We\'re automatically saving your work data. You can view your past work sessions anytime.'
     },
     status: {
@@ -100,7 +101,7 @@ const translations = {
       description: '登録して作業データを安全に保存し、過去の作業セッションを表示し、詳細な統計を取得できます。'
     },
     welcome: {
-      title: 'ようこそ！',
+      title: 'ようこそ、{name}さん！',
       description: '作業データは自動的に保存されています。過去の作業セッションはいつでも確認できます。'
     },
     status: {
@@ -386,10 +387,28 @@ export default function Home() {
   const [showReport, setShowReport] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email: string; firstName: string; lastName: string } | null>(null);
 
   // Get translations for current language
   const t = translations[language];
+
+  useEffect(() => {
+    // Check if user is logged in by verifying JWT token from cookie
+    const cookies = document.cookie;
+    const token = cookies.match(/token=([^;]+)/)?.[1];
+    
+    if (token) {
+      const userData = verifyJwt(token);
+      if (userData) {
+        setUser(userData);
+        console.log('User logged in:', userData); // Debug log
+      } else {
+        console.log('Invalid token'); // Debug log
+      }
+    } else {
+      console.log('No token found'); // Debug log
+    }
+  }, []); // Run only once on component mount
 
   useEffect(() => {
     try {
@@ -533,19 +552,6 @@ export default function Home() {
     finishWork();
     setShowConfirm(false);
   };
-
-  useEffect(() => {
-    // Check if user is logged in
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        setUser(userData);
-      } catch (err) {
-        console.error('Error parsing user data:', err);
-      }
-    }
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col relative">
@@ -749,7 +755,7 @@ export default function Home() {
             {user ? (
               <>
                 <h2 className="text-lg sm:text-xl font-bold text-indigo-900 mb-2">
-                  {t.welcome.title}
+                  {t.welcome.title.replace('{name}', user.firstName)}
                 </h2>
                 <p className="text-sm sm:text-base text-indigo-700 mb-4 max-w-2xl mx-auto">
                   {t.welcome.description}
