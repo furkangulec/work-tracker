@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const translations = {
   tr: {
@@ -33,8 +33,8 @@ export default function PanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
   const pathname = usePathname();
+  const { language, setLanguage } = useLanguage();
   const t = translations[language];
 
   const menuItems = [
@@ -57,6 +57,23 @@ export default function PanelLayout({
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
             <h1 className="text-xl font-semibold text-gray-800">{t.title}</h1>
           </div>
+          
+          {/* Language Selector */}
+          <div className="px-4 py-3 border-b border-gray-200">
+            <label className="block text-sm font-semibold text-gray-900 mb-2">
+              {language === 'tr' ? 'Dil Seçimi' : language === 'en' ? 'Language' : '言語'}
+            </label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as 'tr' | 'en' | 'ja')}
+              className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base font-medium text-black"
+            >
+              <option value="tr" className="text-base font-medium text-black">🇹🇷 Türkçe</option>
+              <option value="en" className="text-base font-medium text-black">🇬🇧 English</option>
+              <option value="ja" className="text-base font-medium text-black">🇯🇵 日本語</option>
+            </select>
+          </div>
+
           <nav className="flex-1 px-4 py-4 space-y-1">
             <Link
               href="/"
@@ -89,8 +106,8 @@ export default function PanelLayout({
       </div>
 
       {/* Main content */}
-      <div className="pl-64">
-        <main className="p-8">
+      <div className="flex h-screen bg-gray-100 pl-64">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
