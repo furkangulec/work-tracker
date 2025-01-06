@@ -18,24 +18,34 @@ interface TimerState {
   isFinished: boolean;
 }
 
-export default function Home() {
-  const [timerState, setTimerState] = useState<TimerState>({
-    isWorking: false,
-    isBreak: false,
-    workTime: 0,
-    breakTime: 0,
-    lastStartTime: null,
-    sessions: [],
-    isFinished: false,
-  });
+const initialState: TimerState = {
+  isWorking: false,
+  isBreak: false,
+  workTime: 0,
+  breakTime: 0,
+  lastStartTime: null,
+  sessions: [],
+  isFinished: false,
+};
 
+export default function Home() {
+  const [timerState, setTimerState] = useState<TimerState>(initialState);
   const [displayTime, setDisplayTime] = useState('00:00:00');
 
   useEffect(() => {
-    // Load state from localStorage
-    const savedState = localStorage.getItem('timerState');
-    if (savedState) {
-      setTimerState(JSON.parse(savedState));
+    try {
+      const savedState = localStorage.getItem('timerState');
+      if (savedState) {
+        const parsedState = JSON.parse(savedState) as TimerState;
+        // Ensure sessions array exists
+        setTimerState({
+          ...parsedState,
+          sessions: Array.isArray(parsedState.sessions) ? parsedState.sessions : [],
+        });
+      }
+    } catch (error) {
+      console.error('Error loading saved state:', error);
+      setTimerState(initialState);
     }
   }, []);
 
@@ -45,7 +55,6 @@ export default function Home() {
     if (timerState.isWorking || timerState.isBreak) {
       interval = setInterval(() => {
         const now = Date.now();
-        const elapsed = timerState.lastStartTime ? now - timerState.lastStartTime : 0;
         
         setTimerState(prev => {
           const newState = {
@@ -60,7 +69,7 @@ export default function Home() {
     }
 
     return () => clearInterval(interval);
-  }, [timerState.isWorking, timerState.isBreak, timerState.lastStartTime]);
+  }, [timerState.isWorking, timerState.isBreak]);
 
   useEffect(() => {
     const formatTime = (time: number) => {
@@ -87,12 +96,14 @@ export default function Home() {
   const startWork = () => {
     const now = Date.now();
     setTimerState(prev => {
-      const lastSession = prev.sessions[prev.sessions.length - 1];
+      const sessions = prev.sessions || [];
+      const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
+      
       if (lastSession && lastSession.endTime === null) {
         lastSession.endTime = now;
       }
 
-      const newSessions = [...prev.sessions, { startTime: now, endTime: null, type: 'work' as const }];
+      const newSessions = [...sessions, { startTime: now, endTime: null, type: 'work' as const }];
       const newState = {
         ...prev,
         isWorking: true,
@@ -109,12 +120,14 @@ export default function Home() {
   const startBreak = () => {
     const now = Date.now();
     setTimerState(prev => {
-      const lastSession = prev.sessions[prev.sessions.length - 1];
+      const sessions = prev.sessions || [];
+      const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
+      
       if (lastSession && lastSession.endTime === null) {
         lastSession.endTime = now;
       }
 
-      const newSessions = [...prev.sessions, { startTime: now, endTime: null, type: 'break' as const }];
+      const newSessions = [...sessions, { startTime: now, endTime: null, type: 'break' as const }];
       const newState = {
         ...prev,
         isWorking: false,
@@ -130,7 +143,9 @@ export default function Home() {
   const finishWork = () => {
     const now = Date.now();
     setTimerState(prev => {
-      const lastSession = prev.sessions[prev.sessions.length - 1];
+      const sessions = prev.sessions || [];
+      const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
+      
       if (lastSession && lastSession.endTime === null) {
         lastSession.endTime = now;
       }
@@ -140,6 +155,7 @@ export default function Home() {
         isWorking: false,
         isBreak: false,
         lastStartTime: null,
+        sessions: sessions,
         isFinished: true,
       };
       localStorage.setItem('timerState', JSON.stringify(newState));
@@ -148,17 +164,8 @@ export default function Home() {
   };
 
   const resetTimers = () => {
-    const newState = {
-      isWorking: false,
-      isBreak: false,
-      workTime: 0,
-      breakTime: 0,
-      lastStartTime: null,
-      sessions: [],
-      isFinished: false,
-    };
-    setTimerState(newState);
-    localStorage.setItem('timerState', JSON.stringify(newState));
+    localStorage.setItem('timerState', JSON.stringify(initialState));
+    setTimerState(initialState);
   };
 
   return (
@@ -223,46 +230,76 @@ export default function Home() {
             </div>
           </>
         ) : (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-semibold mb-4">Çalışma Raporu</h2>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-bold text-gray-800">Çalışma Raporu</h2>
+              <button
+                onClick={resetTimers}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base flex items-center gap-2"
+              >
+                <span>🔄</span> Yeni Çalışmaya Başla
+              </button>
+            </div>
             
-            <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold mb-2">Özet</h3>
-                <div className="grid grid-cols-2 gap-4 text-lg">
-                  <div>Toplam Çalışma: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
-                  <div>Toplam Mola: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+                <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                  <span>⏱️</span> Toplam Çalışma
+                </h3>
+                <div className="text-3xl font-mono font-bold text-green-600">
+                  {new Date(timerState.workTime).toISOString().substr(11, 8)}
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold mb-2">Detaylı Oturumlar</h3>
-                <div className="space-y-3">
-                  {timerState.sessions.map((session, index) => (
-                    <div key={index} className={`p-3 rounded-lg ${session.type === 'work' ? 'bg-green-50' : 'bg-yellow-50'}`}>
-                      <div className="font-semibold mb-1">
-                        {session.type === 'work' ? '🎯 Çalışma' : '☕ Mola'} #{index + 1}
-                      </div>
-                      <div className="text-sm">
-                        <div>Başlangıç: {formatDateTime(session.startTime)}</div>
-                        <div>Bitiş: {session.endTime ? formatDateTime(session.endTime) : 'Devam Ediyor'}</div>
-                        {session.endTime && (
-                          <div>Süre: {new Date(session.endTime - session.startTime).toISOString().substr(11, 8)}</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+              <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+                <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                  <span>☕</span> Toplam Mola
+                </h3>
+                <div className="text-3xl font-mono font-bold text-yellow-600">
+                  {new Date(timerState.breakTime).toISOString().substr(11, 8)}
                 </div>
               </div>
             </div>
 
-            <div className="mt-6">
-              <button
-                onClick={resetTimers}
-                className="w-full py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg"
-              >
-                Yeni Çalışmaya Başla
-              </button>
+            <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+              <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
+                <span>📊</span> Detaylı Oturumlar
+              </h3>
+              <div className="space-y-4">
+                {timerState.sessions.map((session, index) => (
+                  <div 
+                    key={index} 
+                    className={`p-4 rounded-lg border ${
+                      session.type === 'work' 
+                        ? 'border-green-200 bg-green-50' 
+                        : 'border-yellow-200 bg-yellow-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="font-semibold text-lg text-gray-800">
+                        {session.type === 'work' ? '🎯 Çalışma' : '☕ Mola'} #{index + 1}
+                      </div>
+                      {session.endTime && (
+                        <div className={`font-mono font-bold ${
+                          session.type === 'work' ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {new Date(session.endTime - session.startTime).toISOString().substr(11, 8)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                      <div className="space-y-1">
+                        <div className="font-medium">Başlangıç</div>
+                        <div>{formatDateTime(session.startTime)}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="font-medium">Bitiş</div>
+                        <div>{session.endTime ? formatDateTime(session.endTime) : 'Devam Ediyor'}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
