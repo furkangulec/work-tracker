@@ -513,6 +513,14 @@ export default function Home() {
             sessions: data.work.sessions,
           }));
         } else {
+          // Check if there is an active session
+          const checkResponse = await fetch('/api/work/check-active');
+          const checkData = await checkResponse.json();
+
+          if (checkData.hasActiveSession) {
+            throw new Error('There is already an active work session');
+          }
+
           // Start new work session
           const response = await fetch('/api/work/start', {
             method: 'POST',
@@ -535,8 +543,10 @@ export default function Home() {
         }
       } catch (error) {
         console.error('Failed to start work:', error);
-        // Fallback to localStorage if API fails
-        startWorkLocally(currentTime);
+        // Show error to user
+        alert(error instanceof Error ? error.message : 'Failed to start work');
+        // Don't fallback to localStorage if API fails
+        return;
       }
     } else {
       // Use localStorage for guests

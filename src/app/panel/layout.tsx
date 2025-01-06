@@ -8,6 +8,7 @@ const translations = {
   tr: {
     menu: {
       dashboard: 'Panel',
+      myWorks: 'Çalışmalarım'
     },
     title: 'Kullanıcı Paneli',
     returnToWork: 'Çalışmaya Dön'
@@ -15,6 +16,7 @@ const translations = {
   en: {
     menu: {
       dashboard: 'Dashboard',
+      myWorks: 'My Works'
     },
     title: 'User Panel',
     returnToWork: 'Return to Work'
@@ -22,6 +24,7 @@ const translations = {
   ja: {
     menu: {
       dashboard: 'ダッシュボード',
+      myWorks: '作業履歴'
     },
     title: 'ユーザーパネル',
     returnToWork: '作業に戻る'
@@ -44,6 +47,15 @@ export default function PanelLayout({
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+      ),
+    },
+    {
+      href: '/panel/works',
+      label: t.menu.myWorks,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
         </svg>
       ),
     },
