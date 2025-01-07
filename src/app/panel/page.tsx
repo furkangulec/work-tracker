@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useLanguage, type Language } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface WorkStats {
   totalWorks: number;
@@ -23,10 +23,8 @@ export default function Panel() {
   const [error, setError] = useState<string | null>(null);
   const { language } = useLanguage();
 
-  type Language = 'tr' | 'en' | 'ja';
-
   type TranslationType = {
-    [K in Language]: {
+    [K in 'tr' | 'en' | 'ja']: {
       title: string;
       loading: string;
       returnToWork: string;
@@ -91,7 +89,7 @@ export default function Panel() {
     }
   };
 
-  const t = translations[language as Language];
+  const t = translations[language as 'tr' | 'en' | 'ja'];
 
   useEffect(() => {
     async function fetchStats() {

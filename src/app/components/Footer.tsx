@@ -1,10 +1,8 @@
 'use client';
 
-interface FooterProps {
-  language?: 'tr' | 'en' | 'ja';
-}
+interface FooterProps {}
 
-export default function Footer({ language = 'tr' }: FooterProps) {
+export default function Footer({}: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (

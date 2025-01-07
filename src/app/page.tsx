@@ -3,8 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Footer from './components/Footer';
-import { verifyJwt } from '@/lib/jwt';
-import { getJwtFromCookie } from '@/lib/jwt';
 
 // Add translations
 const translations = {
@@ -554,7 +552,6 @@ export default function Home() {
         setTimerState(prev => {
           // Son oturumun süresini hesapla
           const lastSession = prev.sessions[prev.sessions.length - 1];
-          const sessionDuration = now - (lastSession?.startTime || now);
           
           const newState = {
             ...prev,

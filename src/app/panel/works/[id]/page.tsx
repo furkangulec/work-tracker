@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Work, WorkSession } from '@/types/work';
+import { Work } from '@/types/work';
 
 const translations = {
   tr: {
@@ -63,7 +63,6 @@ export default function WorkDetail() {
   const [error, setError] = useState<string | null>(null);
   const { language } = useLanguage();
   const params = useParams();
-  const router = useRouter();
 
   const t = translations[language as keyof typeof translations];
 

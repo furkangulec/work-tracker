@@ -201,7 +201,7 @@ export default function Login() {
         window.location.href = '/';
       }, 1000);
 
-    } catch (err) {
+    } catch (_) {
       setError(t.errors.serverError);
     } finally {
       setIsLoading(false);
@@ -322,7 +322,7 @@ export default function Login() {
         </div>
       </main>
 
-      <Footer language={language} />
+      <Footer />
     </div>
   );
 } 
