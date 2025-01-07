@@ -480,7 +480,7 @@ export default function Home() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(syncInterval);
     };
-  }, [user, timerState.workId]);
+  }, [user, timerState.workId, syncWithServer]);
 
   // Local storage state initialization
   useEffect(() => {
@@ -539,7 +539,7 @@ export default function Home() {
       console.error('Error loading saved state:', error);
       setTimerState(initialState);
     }
-  }, [user]);
+  }, [user, syncWithServer]);
 
   // Timer update effect
   useEffect(() => {
@@ -547,12 +547,7 @@ export default function Home() {
 
     if ((timerState.isWorking || timerState.isBreak) && timerState.lastStartTime) {
       interval = setInterval(() => {
-        const now = Date.now();
-        
         setTimerState(prev => {
-          // Son oturumun süresini hesapla
-          const lastSession = prev.sessions[prev.sessions.length - 1];
-          
           const newState = {
             ...prev,
             workTime: prev.isWorking ? prev.workTime + 1000 : prev.workTime,

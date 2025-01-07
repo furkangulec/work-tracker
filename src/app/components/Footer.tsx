@@ -1,8 +1,6 @@
 'use client';
 
-interface FooterProps {}
-
-export default function Footer({}: FooterProps) {
+export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (

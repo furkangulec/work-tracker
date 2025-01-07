@@ -215,7 +215,7 @@ export default function Register() {
         window.location.href = '/';
       }, 1000);
 
-    } catch (err) {
+    } catch {
       setError(t.errors.serverError);
     } finally {
       setIsLoading(false);
@@ -366,7 +366,7 @@ export default function Register() {
         </div>
       </main>
 
-      <Footer language={language} />
+      <Footer />
     </div>
   );
 } 
