@@ -5,7 +5,7 @@ import { verifyJwt, getJwtFromCookie } from '@/lib/jwt';
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Token doğrulama
@@ -21,13 +21,21 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
+    // `params`'ı çözümle
+    const { id } = await params;
+
+    // ID'nin geçerliliğini kontrol et
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, error: 'Invalid ID' }, { status: 400 });
+    }
+
     // MongoDB bağlan
     const client = await clientPromise;
     const db = client.db('work-tracker');
 
     // Çalışma oturumunu ID ile getir
     const work = await db.collection('works').findOne({
-      _id: new ObjectId(context.params.id),
+      _id: new ObjectId(id),
       userId: userData.id,
     });
 
