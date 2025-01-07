@@ -1109,7 +1109,7 @@ export default function Home() {
 
                 {user && timerState.isWorking && (
                   <button
-                    onClick={() => {}} // Note button click handler will be implemented later
+                    onClick={() => router.push('/notes')}
                     className="flex items-center justify-center gap-2 py-3 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all duration-200 font-medium border-2 border-indigo-600 shadow-md hover:shadow-lg group"
                   >
                     <svg 
