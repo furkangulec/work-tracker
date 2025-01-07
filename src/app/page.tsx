@@ -508,12 +508,16 @@ export default function Home() {
         const data = await response.json();
         
         if (data.user) {
-          setUser(data.user);
+          // First reset the timer state to initial
+          setTimerState(initialState);
           
-          // Clear any existing local storage data when user logs in
+          // Then clear any existing local storage data
           localStorage.removeItem('timerState');
           
-          // Check for active work session
+          // Set user after clearing local data
+          setUser(data.user);
+          
+          // Finally check for active work session from database
           const activeResponse = await fetch('/api/work/check-active');
           const activeData = await activeResponse.json();
           
