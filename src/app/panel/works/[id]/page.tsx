@@ -16,7 +16,9 @@ const translations = {
     details: {
       startTime: 'Başlangıç Zamanı',
       endTime: 'Bitiş Zamanı',
-      duration: 'Toplam Çalışma Süresi',
+      totalDuration: 'Toplam Süre',
+      workDuration: 'Toplam Çalışma Süresi',
+      breakDuration: 'Toplam Mola Süresi',
       sessions: 'Oturum Detayları',
       work: 'Çalışma',
       break: 'Mola',
@@ -32,7 +34,9 @@ const translations = {
     details: {
       startTime: 'Start Time',
       endTime: 'End Time',
-      duration: 'Total Work Time',
+      totalDuration: 'Total Duration',
+      workDuration: 'Total Work Time',
+      breakDuration: 'Total Break Time',
       sessions: 'Session Details',
       work: 'Work',
       break: 'Break',
@@ -48,7 +52,9 @@ const translations = {
     details: {
       startTime: '開始時間',
       endTime: '終了時間',
-      duration: '合計作業時間',
+      totalDuration: '合計時間',
+      workDuration: '合計作業時間',
+      breakDuration: '合計休憩時間',
       sessions: 'セッション詳細',
       work: '作業',
       break: '休憩',
@@ -203,10 +209,26 @@ export default function WorkDetail() {
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">
-                    {t.details.duration}
+                    {t.details.totalDuration}
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {formatDuration(work.totalWorkTime)}
+                    {formatDuration((work.totalWorkTime || 0) + (work.totalBreakTime || 0))}
+                  </dd>
+                </div>
+                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">
+                    {t.details.workDuration}
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {formatDuration(work.totalWorkTime || 0)}
+                  </dd>
+                </div>
+                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">
+                    {t.details.breakDuration}
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {formatDuration(work.totalBreakTime || 0)}
                   </dd>
                 </div>
               </dl>
