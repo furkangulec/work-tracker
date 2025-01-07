@@ -11,7 +11,8 @@ const translations = {
       myWorks: 'Çalışmalarım'
     },
     title: 'Kullanıcı Paneli',
-    returnToWork: 'Çalışmaya Dön'
+    returnToWork: 'Çalışmaya Dön',
+    logout: 'Çıkış Yap'
   },
   en: {
     menu: {
@@ -19,7 +20,8 @@ const translations = {
       myWorks: 'My Works'
     },
     title: 'User Panel',
-    returnToWork: 'Return to Work'
+    returnToWork: 'Return to Work',
+    logout: 'Logout'
   },
   ja: {
     menu: {
@@ -27,7 +29,8 @@ const translations = {
       myWorks: '作業履歴'
     },
     title: 'ユーザーパネル',
-    returnToWork: '作業に戻る'
+    returnToWork: '作業に戻る',
+    logout: 'ログアウト'
   }
 };
 
@@ -39,6 +42,29 @@ export default function PanelLayout({
   const pathname = usePathname();
   const { language, setLanguage } = useLanguage();
   const t = translations[language];
+
+  const handleLogout = async () => {
+    try {
+      // Send logout request to clear token on server
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Include cookies in request
+      });
+      
+      if (response.ok) {
+        // Clear any client-side storage if exists
+        localStorage.removeItem('timerState');
+        
+        // Redirect to homepage
+        window.location.href = '/';
+      } else {
+        throw new Error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      alert('Çıkış yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+    }
+  };
 
   const menuItems = [
     {
@@ -62,10 +88,11 @@ export default function PanelLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
+      <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
         <div className="flex flex-col h-full">
+          {/* Header Title */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
             <h1 className="text-xl font-semibold text-gray-800">{t.title}</h1>
           </div>
@@ -86,7 +113,7 @@ export default function PanelLayout({
             </select>
           </div>
 
-          <nav className="flex-1 px-4 py-4 space-y-1">
+          <div className="flex-1 px-4 py-4 space-y-1">
             <Link
               href="/"
               className="flex items-center gap-3 px-3 py-2 mb-4 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
@@ -113,15 +140,25 @@ export default function PanelLayout({
                 </Link>
               );
             })}
-          </nav>
+          </div>
+          {/* Logout Button */}
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className="font-medium">{t.logout}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex h-screen bg-gray-100 pl-64">
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+      {/* Main Content */}
+      <div className="pl-64">
+        {children}
       </div>
     </div>
   );
