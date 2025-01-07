@@ -452,6 +452,40 @@ export default function Home() {
         
         if (data.user) {
           setUser(data.user);
+          
+          // Check for active work session
+          const activeResponse = await fetch('/api/work/check-active');
+          const activeData = await activeResponse.json();
+          
+          if (activeData.success && activeData.activeWork) {
+            const activeWork = activeData.activeWork;
+            const lastSession = activeWork.sessions[activeWork.sessions.length - 1];
+            const now = Date.now();
+            
+            // Calculate current session duration if it's ongoing
+            let currentWorkTime = activeWork.totalWorkTime;
+            let currentBreakTime = activeWork.totalBreakTime;
+            
+            if (lastSession && !lastSession.endTime) {
+              const sessionDuration = now - lastSession.startTime;
+              if (lastSession.type === 'work') {
+                currentWorkTime += sessionDuration;
+              } else {
+                currentBreakTime += sessionDuration;
+              }
+            }
+            
+            setTimerState({
+              isWorking: lastSession?.type === 'work' && !lastSession.endTime,
+              isBreak: lastSession?.type === 'break' && !lastSession.endTime,
+              workTime: currentWorkTime,
+              breakTime: currentBreakTime,
+              lastStartTime: lastSession?.endTime ? null : lastSession?.startTime,
+              sessions: activeWork.sessions,
+              isFinished: activeWork.isFinished,
+              workId: activeWork.workId
+            });
+          }
         } else {
           setUser(null);
         }

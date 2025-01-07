@@ -29,7 +29,14 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      hasActiveSession: !!activeWork
+      hasActiveSession: !!activeWork,
+      activeWork: activeWork ? {
+        workId: activeWork._id,
+        sessions: activeWork.sessions,
+        totalWorkTime: activeWork.totalWorkTime,
+        totalBreakTime: activeWork.totalBreakTime,
+        isFinished: activeWork.isFinished
+      } : null
     });
   } catch (error) {
     console.error('Failed to check active work session:', error);
