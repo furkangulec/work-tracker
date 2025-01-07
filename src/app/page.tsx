@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 // Add translations
 const translations = {
   tr: {
-    title: 'Çalışma Takibi',
+    title: 'Chronos',
     register: 'Kayıt Ol',
     login: 'Giriş Yap',
     promo: {
@@ -60,7 +60,7 @@ const translations = {
     }
   },
   en: {
-    title: 'Work Tracker',
+    title: 'Chronos',
     register: 'Register',
     login: 'Login',
     promo: {

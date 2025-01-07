@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 
 const translations = {
   tr: {
-    title: 'Giriş Yap',
+    title: 'Chronos',
     backToHome: 'Ana Sayfaya Dön',
     email: 'E-posta',
     password: 'Şifre',
@@ -15,7 +15,7 @@ const translations = {
     passwordPlaceholder: 'Şifrenizi girin',
     errors: {
       required: 'Bu alan zorunludur',
-      invalidEmail: 'Geçerli bir e-posta adresi girin',
+      invalidEmail: 'Geçerli bir e-posta adresi giriniz',
       invalidCredentials: 'E-posta veya şifre hatalı',
       serverError: 'Bir hata oluştu, lütfen tekrar deneyin'
     },
@@ -232,8 +232,8 @@ export default function Login() {
       <nav className="bg-white/90 backdrop-blur-sm shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-              {t.title}
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 font-serif" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Chronos
             </h1>
             <div>
               <LanguageButton

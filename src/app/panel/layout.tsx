@@ -94,7 +94,9 @@ export default function PanelLayout({
         <div className="flex flex-col h-full">
           {/* Header Title */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
-            <h1 className="text-xl font-semibold text-gray-800">{t.title}</h1>
+            <h1 className="text-xl font-semibold text-gray-800 font-serif" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Chronos
+            </h1>
           </div>
           
           {/* Language Selector */}
