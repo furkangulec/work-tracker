@@ -18,7 +18,8 @@ const translations = {
     welcome: {
       title: 'Hoş Geldin, {name}!',
       description: 'Çalışma verilerini otomatik olarak kaydediyoruz. İstediğin zaman geçmiş çalışmalarını görüntüleyebilirsin.',
-      panel: 'Panele Git'
+      panel: 'Panele Git',
+      logout: 'Çıkış Yap'
     },
     status: {
       working: 'Çalışıyor',
@@ -50,6 +51,12 @@ const translations = {
     confirmModal: {
       title: 'Çalışmayı Bitir',
       message: 'Çalışmayı bitirmek istediğinize emin misiniz? Bu işlem geri alınamaz ve mevcut çalışma oturumunuz sonlandırılacaktır.'
+    },
+    logoutModal: {
+      title: 'Çıkış Yap',
+      message: 'Çıkış yapmak istediğinize emin misiniz?',
+      confirm: 'Evet, Çıkış Yap',
+      cancel: 'İptal'
     }
   },
   en: {
@@ -63,7 +70,8 @@ const translations = {
     welcome: {
       title: 'Welcome, {name}!',
       description: 'We\'re automatically saving your work data. You can view your past work sessions anytime.',
-      panel: 'Go to Panel'
+      panel: 'Go to Panel',
+      logout: 'Logout'
     },
     status: {
       working: 'Working',
@@ -95,6 +103,12 @@ const translations = {
     confirmModal: {
       title: 'Finish Work',
       message: 'Are you sure you want to finish working? This action cannot be undone and your current work session will be ended.'
+    },
+    logoutModal: {
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      confirm: 'Yes, Logout',
+      cancel: 'Cancel'
     }
   },
   ja: {
@@ -108,7 +122,8 @@ const translations = {
     welcome: {
       title: 'ようこそ、{name}さん！',
       description: '作業データは自動的に保存されています。過去の作業セッションはいつでも確認できます。',
-      panel: 'パネルへ'
+      panel: 'パネルへ',
+      logout: 'ログアウト'
     },
     status: {
       working: '作業中',
@@ -140,6 +155,12 @@ const translations = {
     confirmModal: {
       title: '作業終了',
       message: '作業を終了してもよろしいですか？この操作は取り消せず、現在の作業セッションが終了します。'
+    },
+    logoutModal: {
+      title: 'ログアウト',
+      message: 'ログアウトしてもよろしいですか？',
+      confirm: 'はい、ログアウトします',
+      cancel: 'キャンセル'
     }
   }
 };
@@ -388,6 +409,41 @@ function ConfirmModal({ onConfirm, onCancel, t }: ConfirmModalProps) {
   );
 }
 
+interface LogoutModalProps {
+  onConfirm: () => void;
+  onCancel: () => void;
+  t: typeof translations.tr | typeof translations.en | typeof translations.ja;
+}
+
+function LogoutModal({ onConfirm, onCancel, t }: LogoutModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          {t.logoutModal.title}
+        </h2>
+        <p className="text-gray-600 mb-6">
+          {t.logoutModal.message}
+        </p>
+        <div className="flex gap-4">
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          >
+            {t.logoutModal.confirm}
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            {t.logoutModal.cancel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
   const [timerState, setTimerState] = useState<TimerState>(initialState);
@@ -397,6 +453,7 @@ export default function Home() {
   const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
   const [user, setUser] = useState<{ id: string; email: string; firstName: string; lastName: string } | null>(null);
   const lastSyncTime = useRef<number>(Date.now());
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Get translations for current language
   const t = translations[language];
@@ -452,6 +509,9 @@ export default function Home() {
         
         if (data.user) {
           setUser(data.user);
+          
+          // Clear any existing local storage data when user logs in
+          localStorage.removeItem('timerState');
           
           // Check for active work session
           const activeResponse = await fetch('/api/work/check-active');
@@ -888,6 +948,38 @@ export default function Home() {
     router.push(path);
   };
 
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        // Clear local state
+        setUser(null);
+        setTimerState(initialState);
+        // Clear local storage
+        localStorage.removeItem('timerState');
+        // Close modal
+        setShowLogoutModal(false);
+        // Redirect to home
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Failed to logout. Please try again.');
+    }
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col relative">
       {/* Squared notebook background */}
@@ -1095,15 +1187,26 @@ export default function Home() {
                 <p className="text-sm sm:text-base text-indigo-700 mb-4 max-w-2xl mx-auto">
                   {t.welcome.description}
                 </p>
-                <Link 
-                  href="/panel" 
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-md hover:shadow-lg"
-                >
-                  {t.welcome.panel}
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Link>
+                <div className="flex justify-center gap-4">
+                  <Link 
+                    href="/panel" 
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-md hover:shadow-lg"
+                  >
+                    {t.welcome.panel}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                  <button
+                    onClick={handleLogoutClick}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-semibold shadow-md hover:shadow-lg border-2 border-indigo-600"
+                  >
+                    {t.welcome.logout}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -1148,6 +1251,14 @@ export default function Home() {
         <ConfirmModal
           onConfirm={confirmFinishWork}
           onCancel={() => setShowConfirm(false)}
+          t={t}
+        />
+      )}
+
+      {showLogoutModal && (
+        <LogoutModal
+          onConfirm={handleLogoutConfirm}
+          onCancel={handleLogoutCancel}
           t={t}
         />
       )}
