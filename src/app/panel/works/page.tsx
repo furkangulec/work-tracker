@@ -19,7 +19,9 @@ const translations = {
     },
     workCard: {
       date: 'Tarih',
-      duration: 'Süre',
+      duration: 'Toplam Süre',
+      workDuration: 'Çalışma',
+      breakDuration: 'Mola',
       work: 'Çalışma',
       ongoing: 'Devam Ediyor',
       viewDetails: 'Detayları Gör'
@@ -38,7 +40,9 @@ const translations = {
     },
     workCard: {
       date: 'Date',
-      duration: 'Duration',
+      duration: 'Total Duration',
+      workDuration: 'Work',
+      breakDuration: 'Break',
       work: 'Work',
       ongoing: 'Ongoing',
       viewDetails: 'View Details'
@@ -57,7 +61,9 @@ const translations = {
     },
     workCard: {
       date: '日付',
-      duration: '期間',
+      duration: '合計時間',
+      workDuration: '作業',
+      breakDuration: '休憩',
       work: '作業',
       ongoing: '進行中',
       viewDetails: '詳細を見る'
@@ -271,8 +277,16 @@ export default function Works() {
                         <dt className="text-sm font-medium text-gray-500">
                           {t.workCard.duration}
                         </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {formatDuration(work.totalWorkTime)}
+                        <dd className="mt-1 text-sm text-gray-900 flex items-center gap-3">
+                          <span>{formatDuration(work.totalWorkTime)}</span>
+                          <span className="flex items-center gap-2 text-green-700 bg-green-50 px-2 py-1 rounded">
+                            <span className="text-xs font-medium">{t.workCard.workDuration}:</span>
+                            <span className="font-medium">{formatDuration(work.totalWorkTime - (work.totalBreakTime || 0))}</span>
+                          </span>
+                          <span className="flex items-center gap-2 text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
+                            <span className="text-xs font-medium">{t.workCard.breakDuration}:</span>
+                            <span className="font-medium">{formatDuration(work.totalBreakTime || 0)}</span>
+                          </span>
                         </dd>
                       </div>
                     </div>
