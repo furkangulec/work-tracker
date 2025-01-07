@@ -2,13 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { Playfair_Display } from 'next/font/google';
 
 const inter = Inter({ subsets: ["latin"] });
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: "Chronos",
@@ -24,8 +19,9 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" />
+        <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={playfair.className}>
+      <body className={inter.className}>
         <LanguageProvider>
           {children}
         </LanguageProvider>
