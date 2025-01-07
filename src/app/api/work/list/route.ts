@@ -18,14 +18,32 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
+    // Get date filters from URL
+    const { searchParams } = new URL(request.url);
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+
     // Connect to MongoDB
     const client = await clientPromise;
     const db = client.db('work-tracker');
     const works = db.collection<Work>('works');
 
-    // Get all work sessions for the user, sorted by start time in descending order
+    // Build query
+    const query: any = { userId: userData.id };
+    
+    if (startDate || endDate) {
+      query.startTime = {};
+      if (startDate) {
+        query.startTime.$gte = new Date(startDate).getTime();
+      }
+      if (endDate) {
+        query.startTime.$lte = new Date(endDate).getTime();
+      }
+    }
+
+    // Get filtered work sessions for the user, sorted by start time in descending order
     const userWorks = await works
-      .find({ userId: userData.id })
+      .find(query)
       .sort({ startTime: -1 })
       .toArray();
 

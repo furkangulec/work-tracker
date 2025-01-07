@@ -11,6 +11,12 @@ const translations = {
     loading: 'Çalışmalar yükleniyor...',
     error: 'Çalışmalar yüklenirken bir hata oluştu',
     noWorks: 'Henüz hiç çalışma kaydınız yok',
+    filter: {
+      startDate: 'Başlangıç Tarihi',
+      endDate: 'Bitiş Tarihi',
+      apply: 'Filtrele',
+      clear: 'Temizle'
+    },
     workCard: {
       date: 'Tarih',
       duration: 'Süre',
@@ -24,6 +30,12 @@ const translations = {
     loading: 'Loading works...',
     error: 'An error occurred while loading works',
     noWorks: 'You have no work records yet',
+    filter: {
+      startDate: 'Start Date',
+      endDate: 'End Date',
+      apply: 'Apply Filter',
+      clear: 'Clear'
+    },
     workCard: {
       date: 'Date',
       duration: 'Duration',
@@ -37,6 +49,12 @@ const translations = {
     loading: '作業を読み込んでいます...',
     error: '作業の読み込み中にエラーが発生しました',
     noWorks: '作業記録はまだありません',
+    filter: {
+      startDate: '開始日',
+      endDate: '終了日',
+      apply: 'フィルター',
+      clear: 'クリア'
+    },
     workCard: {
       date: '日付',
       duration: '期間',
@@ -51,30 +69,47 @@ export default function Works() {
   const [works, setWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const { language } = useLanguage();
 
   const t = translations[language as keyof typeof translations];
 
-  useEffect(() => {
-    async function fetchWorks() {
-      try {
-        const response = await fetch('/api/work/list');
-        const data = await response.json();
+  const fetchWorks = async (start?: string, end?: string) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (start) params.append('startDate', start);
+      if (end) params.append('endDate', end);
 
-        if (!data.success) {
-          throw new Error(data.error || 'Failed to fetch works');
-        }
+      const response = await fetch(`/api/work/list?${params.toString()}`);
+      const data = await response.json();
 
-        setWorks(data.works);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch works');
       }
-    }
 
+      setWorks(data.works);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchWorks();
   }, []);
+
+  const handleFilter = () => {
+    fetchWorks(startDate, endDate);
+  };
+
+  const handleClear = () => {
+    setStartDate('');
+    setEndDate('');
+    fetchWorks();
+  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString(
@@ -149,6 +184,48 @@ export default function Works() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
+            <div className="mt-4 bg-white p-4 rounded-lg shadow-lg border border-gray-100">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-end">
+                <div>
+                  <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+                    {t.filter.startDate}
+                  </label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
+                    {t.filter.endDate}
+                  </label>
+                  <input
+                    type="date"
+                    id="endDate"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleFilter}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    {t.filter.apply}
+                  </button>
+                  <button
+                    onClick={handleClear}
+                    className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    {t.filter.clear}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {works.length === 0 ? (
@@ -160,7 +237,7 @@ export default function Works() {
               {works.map((work, index) => (
                 <div
                   key={work._id?.toString()}
-                  className="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow"
+                  className="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-all duration-200 border border-gray-100"
                 >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
