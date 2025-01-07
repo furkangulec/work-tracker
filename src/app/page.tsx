@@ -1072,12 +1072,14 @@ export default function Home() {
                 )}
 
                 {timerState.isWorking && (
-                  <button
-                    onClick={startBreak}
-                    className="w-full py-3 sm:py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-base sm:text-lg"
-                  >
-                    {t.buttons.takeBreak}
-                  </button>
+                  <>
+                    <button
+                      onClick={startBreak}
+                      className="w-full py-3 sm:py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-base sm:text-lg"
+                    >
+                      {t.buttons.takeBreak}
+                    </button>
+                  </>
                 )}
 
                 {timerState.isBreak && (
@@ -1104,6 +1106,28 @@ export default function Home() {
                   <div className="text-center sm:text-left">{t.labels.totalWork}: {new Date(timerState.workTime).toISOString().substr(11, 8)}</div>
                   <div className="text-center sm:text-left">{t.labels.totalBreak}: {new Date(timerState.breakTime).toISOString().substr(11, 8)}</div>
                 </div>
+
+                {user && timerState.isWorking && (
+                  <button
+                    onClick={() => {}} // Note button click handler will be implemented later
+                    className="flex items-center justify-center gap-2 py-3 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all duration-200 font-medium border-2 border-indigo-600 shadow-md hover:shadow-lg group"
+                  >
+                    <svg 
+                      className="w-6 h-6 transition-transform duration-200 group-hover:scale-110" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
+                      />
+                    </svg>
+                    Not Ekle
+                  </button>
+                )}
 
                 {timerState.sessions.length > 0 && (
                   <button
