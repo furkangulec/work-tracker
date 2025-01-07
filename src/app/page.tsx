@@ -917,9 +917,25 @@ export default function Home() {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
+      // Close the last session if it's still open
       if (lastSession && lastSession.endTime === null) {
         lastSession.endTime = currentTime;
       }
+
+      // Calculate total work and break times from all sessions
+      let totalWorkTime = 0;
+      let totalBreakTime = 0;
+
+      sessions.forEach(session => {
+        const endTime = session.endTime || currentTime;
+        const duration = endTime - session.startTime;
+        
+        if (session.type === 'work') {
+          totalWorkTime += duration;
+        } else {
+          totalBreakTime += duration;
+        }
+      });
 
       const newState = {
         ...prev,
@@ -928,6 +944,8 @@ export default function Home() {
         lastStartTime: null,
         sessions: sessions,
         isFinished: true,
+        workTime: totalWorkTime,
+        breakTime: totalBreakTime
       };
       localStorage.setItem('timerState', JSON.stringify(newState));
       return newState;
