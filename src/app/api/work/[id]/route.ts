@@ -3,9 +3,15 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { verifyJwt, getJwtFromCookie } from '@/lib/jwt';
 
+type Props = {
+  params: {
+    id: string
+  }
+}
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: Props
 ) {
   try {
     // Get and verify token
