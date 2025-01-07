@@ -396,15 +396,56 @@ export default function Home() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
   const [user, setUser] = useState<{ id: string; email: string; firstName: string; lastName: string } | null>(null);
+  const lastSyncTime = useRef<number>(Date.now());
 
   // Get translations for current language
   const t = translations[language];
+
+  // Sunucudan mevcut durumu kontrol eden fonksiyon
+  const syncWithServer = async () => {
+    if (!user || !timerState.workId) return;
+
+    try {
+      const response = await fetch(`/api/work/${timerState.workId}`);
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to sync with server');
+      }
+
+      const serverWork = data.work;
+      if (!serverWork) return;
+
+      // Sunucudaki son oturumu al
+      const lastServerSession = serverWork.sessions[serverWork.sessions.length - 1];
+      if (!lastServerSession) return;
+
+      // Eğer oturum hala devam ediyorsa, geçen süreyi hesapla
+      if (!lastServerSession.endTime) {
+        const elapsedTime = Date.now() - lastServerSession.startTime;
+        const isWorkSession = lastServerSession.type === 'work';
+
+        setTimerState(prev => ({
+          ...prev,
+          isWorking: isWorkSession,
+          isBreak: !isWorkSession,
+          [isWorkSession ? 'workTime' : 'breakTime']: elapsedTime,
+          lastStartTime: lastServerSession.startTime,
+          sessions: serverWork.sessions,
+          isFinished: serverWork.isFinished
+        }));
+      }
+
+      lastSyncTime.current = Date.now();
+    } catch (error) {
+      console.error('Error syncing with server:', error);
+    }
+  };
 
   useEffect(() => {
     // Check if user is logged in by verifying JWT token from cookie
     async function checkAuth() {
       try {
-        // Make a request to an API endpoint that can read the httpOnly cookie
         const response = await fetch('/api/auth/check');
         const data = await response.json();
         
@@ -422,16 +463,45 @@ export default function Home() {
     checkAuth();
   }, []); // Run only once on component mount
 
+  // Sayfa yüklendiğinde ve görünür olduğunda sunucu ile senkronize et
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncWithServer();
+      }
+    };
+
+    // Sayfa görünürlüğü değiştiğinde
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Sayfa ilk yüklendiğinde
+    syncWithServer();
+
+    // Her 30 saniyede bir sunucu ile senkronize et
+    const syncInterval = setInterval(syncWithServer, 30000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(syncInterval);
+    };
+  }, [user, timerState.workId]);
+
   useEffect(() => {
     try {
       const savedState = localStorage.getItem('timerState');
       if (savedState) {
         const parsedState = JSON.parse(savedState) as TimerState;
-        // Ensure sessions array exists
-        setTimerState({
+        
+        // Yerel durumu yükle ama sunucu ile senkronize et
+        setTimerState(prev => ({
           ...parsedState,
           sessions: Array.isArray(parsedState.sessions) ? parsedState.sessions : [],
-        });
+        }));
+
+        // Hemen sunucu ile senkronize et
+        if (parsedState.workId) {
+          syncWithServer();
+        }
       }
     } catch (error) {
       console.error('Error loading saved state:', error);
@@ -444,7 +514,15 @@ export default function Home() {
 
     if (timerState.isWorking || timerState.isBreak) {
       interval = setInterval(() => {
+        const now = Date.now();
+        const timeSinceLastSync = now - lastSyncTime.current;
+
         setTimerState(prev => {
+          // Eğer son senkronizasyondan bu yana çok zaman geçtiyse, sunucu ile senkronize et
+          if (timeSinceLastSync > 30000) { // 30 saniye
+            syncWithServer();
+          }
+
           const newState = {
             ...prev,
             [timerState.isWorking ? 'workTime' : 'breakTime']: 
