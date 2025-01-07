@@ -14,17 +14,13 @@ const translations = {
     notFound: 'Çalışma bulunamadı',
     backToList: 'Listeye Dön',
     details: {
-      type: {
-        label: 'Tür',
-        work: 'Çalışma',
-        break: 'Mola'
-      },
       startTime: 'Başlangıç Zamanı',
       endTime: 'Bitiş Zamanı',
       duration: 'Toplam Çalışma Süresi',
-      status: 'Durum',
-      ongoing: 'Devam Ediyor',
-      completed: 'Tamamlandı'
+      sessions: 'Oturum Detayları',
+      work: 'Çalışma',
+      break: 'Mola',
+      ongoing: 'Devam Ediyor'
     }
   },
   en: {
@@ -34,17 +30,13 @@ const translations = {
     notFound: 'Work not found',
     backToList: 'Back to List',
     details: {
-      type: {
-        label: 'Type',
-        work: 'Work',
-        break: 'Break'
-      },
       startTime: 'Start Time',
       endTime: 'End Time',
       duration: 'Total Work Time',
-      status: 'Status',
-      ongoing: 'Ongoing',
-      completed: 'Completed'
+      sessions: 'Session Details',
+      work: 'Work',
+      break: 'Break',
+      ongoing: 'Ongoing'
     }
   },
   ja: {
@@ -54,17 +46,13 @@ const translations = {
     notFound: '作業が見つかりません',
     backToList: '一覧に戻る',
     details: {
-      type: {
-        label: '種類',
-        work: '作業',
-        break: '休憩'
-      },
       startTime: '開始時間',
       endTime: '終了時間',
       duration: '合計作業時間',
-      status: 'ステータス',
-      ongoing: '進行中',
-      completed: '完了'
+      sessions: 'セッション詳細',
+      work: '作業',
+      break: '休憩',
+      ongoing: '進行中'
     }
   }
 };
@@ -80,32 +68,30 @@ export default function WorkDetail() {
   const t = translations[language as keyof typeof translations];
 
   useEffect(() => {
-    async function fetchWorkDetail() {
-      try {
-        const response = await fetch(`/api/work/${params.id}`);
-        const data = await response.json();
+    fetchWorkDetail();
+  }, [params.id]);
 
-        if (!data.success) {
-          throw new Error(data.error || 'Failed to fetch work details');
-        }
+  async function fetchWorkDetail() {
+    try {
+      const response = await fetch(`/api/work/${params.id}`);
+      const data = await response.json();
 
-        if (!data.work) {
-          router.push('/panel/works');
-          return;
-        }
-
-        setWork(data.work);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch work details');
       }
-    }
 
-    if (params.id) {
-      fetchWorkDetail();
+      if (!data.work) {
+        setError('Work not found');
+        return;
+      }
+
+      setWork(data.work);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
-  }, [params.id, router]);
+  }
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString(
@@ -139,12 +125,9 @@ export default function WorkDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <h2 className="mt-4 text-lg text-gray-600">{t.loading}</h2>
-          </div>
+      <div className="min-h-screen bg-gray-100 p-8">
+        <div className="max-w-4xl mx-auto">
+          <p>{t.loading}</p>
         </div>
       </div>
     );
@@ -152,12 +135,10 @@ export default function WorkDetail() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              <p>{error}</p>
-            </div>
+      <div className="min-h-screen bg-gray-100 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p>{error}</p>
           </div>
         </div>
       </div>
@@ -166,19 +147,15 @@ export default function WorkDetail() {
 
   if (!work) {
     return (
-      <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-              <p>{t.notFound}</p>
-            </div>
+      <div className="min-h-screen bg-gray-100 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+            <p>{t.notFound}</p>
           </div>
         </div>
       </div>
     );
   }
-
-  const lastSession = work.sessions[work.sessions.length - 1];
 
   return (
     <div className="min-h-screen bg-gray-100 relative">
@@ -194,39 +171,20 @@ export default function WorkDetail() {
           opacity: 0.2
         }}
       />
+      <div className="max-w-4xl mx-auto p-8">
+        <div className="mb-8 flex justify-between items-center">
+          <Link
+            href="/panel/works"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            ← {t.backToList}
+          </Link>
+        </div>
 
-      <div className="py-12 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
-            <Link
-              href="/panel/works"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              ← {t.backToList}
-            </Link>
-          </div>
-
+        <div className="space-y-6">
+          {/* Summary Card */}
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6">
-              <div className="flex items-center space-x-4">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  lastSession?.type === 'work' 
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {t.details.type[lastSession?.type || 'work']}
-                </span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  work.isFinished
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {work.isFinished ? t.details.completed : t.details.ongoing}
-                </span>
-              </div>
-            </div>
-            <div className="border-t border-gray-200">
+            <div className="border-b border-gray-200">
               <dl>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">
@@ -253,6 +211,59 @@ export default function WorkDetail() {
                   </dd>
                 </div>
               </dl>
+            </div>
+          </div>
+
+          {/* Sessions Timeline */}
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg font-medium text-gray-900">{t.details.sessions}</h3>
+            </div>
+            <div className="border-t border-gray-200">
+              <div className="px-4 py-5 sm:px-6">
+                <div className="flow-root">
+                  <ul className="-mb-8">
+                    {work.sessions.map((session, sessionIdx) => (
+                      <li key={sessionIdx}>
+                        <div className="relative pb-8">
+                          {sessionIdx !== work.sessions.length - 1 ? (
+                            <span
+                              className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                              aria-hidden="true"
+                            />
+                          ) : null}
+                          <div className="relative flex space-x-3">
+                            <div>
+                              <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white ${
+                                session.type === 'work' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {session.type === 'work' ? '🎯' : '☕'}
+                              </span>
+                            </div>
+                            <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                              <div>
+                                <p className="text-sm text-gray-500">
+                                  {session.type === 'work' ? t.details.work : t.details.break}
+                                </p>
+                              </div>
+                              <div className="whitespace-nowrap text-right text-sm text-gray-500">
+                                <div className="font-medium">
+                                  {formatDate(session.startTime)}
+                                </div>
+                                <div className="text-gray-400">
+                                  {session.endTime ? formatDuration(session.endTime - session.startTime) : t.details.ongoing}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
