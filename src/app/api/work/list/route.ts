@@ -3,6 +3,14 @@ import clientPromise from '@/lib/mongodb';
 import { Work } from '@/types/work';
 import { verifyJwt, getJwtFromCookie } from '@/lib/jwt';
 
+type WorkQuery = {
+  userId: string;
+  startTime?: {
+    $gte?: number;
+    $lte?: number;
+  };
+};
+
 export async function GET(request: Request) {
   try {
     // Get and verify token
@@ -29,7 +37,7 @@ export async function GET(request: Request) {
     const works = db.collection<Work>('works');
 
     // Build query
-    const query: any = { userId: userData.id };
+    const query: WorkQuery = { userId: userData.id };
     
     if (startDate || endDate) {
       query.startTime = {};
