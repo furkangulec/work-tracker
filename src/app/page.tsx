@@ -442,6 +442,7 @@ export default function Home() {
     }
   };
 
+  // Auth check effect
   useEffect(() => {
     // Check if user is logged in by verifying JWT token from cookie
     async function checkAuth() {
@@ -463,21 +464,18 @@ export default function Home() {
     checkAuth();
   }, []); // Run only once on component mount
 
-  // Sayfa yüklendiğinde ve görünür olduğunda sunucu ile senkronize et
+  // Server sync effect for logged in users
   useEffect(() => {
+    if (!user) return; // Only run for logged in users
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         syncWithServer();
       }
     };
 
-    // Sayfa görünürlüğü değiştiğinde
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Sayfa ilk yüklendiğinde
-    syncWithServer();
-
-    // Her 30 saniyede bir sunucu ile senkronize et
+    syncWithServer(); // Initial sync
     const syncInterval = setInterval(syncWithServer, 30000);
 
     return () => {
@@ -486,56 +484,96 @@ export default function Home() {
     };
   }, [user, timerState.workId]);
 
+  // Local storage state initialization
   useEffect(() => {
     try {
       const savedState = localStorage.getItem('timerState');
-      if (savedState) {
-        const parsedState = JSON.parse(savedState) as TimerState;
-        
-        // Yerel durumu yükle ama sunucu ile senkronize et
-        setTimerState(prev => ({
-          ...parsedState,
-          sessions: Array.isArray(parsedState.sessions) ? parsedState.sessions : [],
-        }));
+      if (!savedState) return;
 
-        // Hemen sunucu ile senkronize et
-        if (parsedState.workId) {
-          syncWithServer();
-        }
+      const parsedState = JSON.parse(savedState) as TimerState;
+      const now = Date.now();
+
+      // Giriş yapmamış kullanıcılar için süre hesaplama
+      if (!user && !parsedState.isFinished) {
+        let totalWorkTime = 0;
+        let totalBreakTime = 0;
+
+        // Tüm oturumları döngüyle kontrol et
+        parsedState.sessions.forEach((session, index) => {
+          if (session.endTime) {
+            // Tamamlanmış oturumların sürelerini hesapla
+            const sessionDuration = session.endTime - session.startTime;
+            if (session.type === 'work') {
+              totalWorkTime += sessionDuration;
+            } else {
+              totalBreakTime += sessionDuration;
+            }
+          } else if (index === parsedState.sessions.length - 1) {
+            // Son ve devam eden oturumun süresini hesapla
+            const sessionDuration = now - session.startTime;
+            if (session.type === 'work') {
+              totalWorkTime += sessionDuration;
+            } else {
+              totalBreakTime += sessionDuration;
+            }
+          }
+        });
+
+        // Son oturumun durumunu kontrol et
+        const lastSession = parsedState.sessions[parsedState.sessions.length - 1];
+        const isActiveSession = lastSession && !lastSession.endTime;
+
+        setTimerState({
+          ...parsedState,
+          workTime: totalWorkTime,
+          breakTime: totalBreakTime,
+          isWorking: isActiveSession && lastSession.type === 'work',
+          isBreak: isActiveSession && lastSession.type === 'break',
+          lastStartTime: isActiveSession ? lastSession.startTime : null,
+        });
+      } else if (user && parsedState.workId) {
+        // Giriş yapmış kullanıcılar için sunucu ile senkronize et
+        syncWithServer();
+      } else {
+        setTimerState(parsedState);
       }
     } catch (error) {
       console.error('Error loading saved state:', error);
       setTimerState(initialState);
     }
-  }, []);
+  }, [user]);
 
+  // Timer update effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (timerState.isWorking || timerState.isBreak) {
+    if ((timerState.isWorking || timerState.isBreak) && timerState.lastStartTime) {
       interval = setInterval(() => {
         const now = Date.now();
-        const timeSinceLastSync = now - lastSyncTime.current;
-
+        
         setTimerState(prev => {
-          // Eğer son senkronizasyondan bu yana çok zaman geçtiyse, sunucu ile senkronize et
-          if (timeSinceLastSync > 30000) { // 30 saniye
-            syncWithServer();
-          }
-
+          // Son oturumun süresini hesapla
+          const lastSession = prev.sessions[prev.sessions.length - 1];
+          const sessionDuration = now - (lastSession?.startTime || now);
+          
           const newState = {
             ...prev,
-            [timerState.isWorking ? 'workTime' : 'breakTime']: 
-              prev[timerState.isWorking ? 'workTime' : 'breakTime'] + 1000,
+            workTime: prev.isWorking ? prev.workTime + 1000 : prev.workTime,
+            breakTime: prev.isBreak ? prev.breakTime + 1000 : prev.breakTime,
           };
-          localStorage.setItem('timerState', JSON.stringify(newState));
+
+          // Giriş yapmamış kullanıcılar için local storage'a kaydet
+          if (!user) {
+            localStorage.setItem('timerState', JSON.stringify(newState));
+          }
+          
           return newState;
         });
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [timerState.isWorking, timerState.isBreak]);
+  }, [timerState.isWorking, timerState.isBreak, timerState.lastStartTime, user]);
 
   useEffect(() => {
     const formatTime = (time: number) => {
@@ -621,9 +659,7 @@ export default function Home() {
         }
       } catch (error) {
         console.error('Failed to start work:', error);
-        // Show error to user
         alert(error instanceof Error ? error.message : 'Failed to start work');
-        // Don't fallback to localStorage if API fails
         return;
       }
     } else {
@@ -637,11 +673,18 @@ export default function Home() {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
-      if (lastSession && lastSession.endTime === null) {
+      // Eğer aktif bir oturum varsa, bitir
+      if (lastSession && !lastSession.endTime) {
         lastSession.endTime = currentTime;
       }
 
-      const newSessions = [...sessions, { startTime: currentTime, endTime: null, type: 'work' as const }];
+      // Yeni çalışma oturumu başlat
+      const newSessions = [...sessions, { 
+        startTime: currentTime, 
+        endTime: null, 
+        type: 'work' as const 
+      }];
+
       const newState = {
         ...prev,
         isWorking: true,
@@ -650,6 +693,7 @@ export default function Home() {
         sessions: newSessions,
         isFinished: false,
       };
+
       localStorage.setItem('timerState', JSON.stringify(newState));
       return newState;
     });
@@ -700,11 +744,18 @@ export default function Home() {
       const sessions = prev.sessions || [];
       const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
-      if (lastSession && lastSession.endTime === null) {
+      // Eğer aktif bir oturum varsa, bitir
+      if (lastSession && !lastSession.endTime) {
         lastSession.endTime = currentTime;
       }
 
-      const newSessions = [...sessions, { startTime: currentTime, endTime: null, type: 'break' as const }];
+      // Yeni mola oturumu başlat
+      const newSessions = [...sessions, { 
+        startTime: currentTime, 
+        endTime: null, 
+        type: 'break' as const 
+      }];
+
       const newState = {
         ...prev,
         isWorking: false,
@@ -712,6 +763,7 @@ export default function Home() {
         lastStartTime: currentTime,
         sessions: newSessions,
       };
+
       localStorage.setItem('timerState', JSON.stringify(newState));
       return newState;
     });
