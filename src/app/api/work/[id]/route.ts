@@ -3,15 +3,9 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { verifyJwt, getJwtFromCookie } from '@/lib/jwt';
 
-type Props = {
-  params: {
-    id: string
-  }
-}
-
 export async function GET(
   request: Request,
-  { params }: Props
+  context: { params: { id: string } }
 ) {
   try {
     // Get and verify token
@@ -33,7 +27,7 @@ export async function GET(
 
     // Get work session by ID
     const work = await db.collection('works').findOne({
-      _id: new ObjectId(params.id),
+      _id: new ObjectId(context.params.id),
       userId: userData.id
     });
 
