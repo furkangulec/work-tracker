@@ -171,7 +171,7 @@ export default function WorkDetail() {
           opacity: 0.2
         }}
       />
-      <div className="max-w-4xl mx-auto p-8">
+      <div className="max-w-4xl mx-auto p-8 relative z-10">
         <div className="mb-8 flex justify-between items-center">
           <Link
             href="/panel/works"
