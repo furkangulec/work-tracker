@@ -649,12 +649,16 @@ export default function Home() {
             throw new Error(data.error);
           }
 
+          // Update local timer state with server response
+          const lastSession = data.work.sessions[data.work.sessions.length - 1];
           setTimerState(prev => ({
             ...prev,
             isWorking: true,
             isBreak: false,
             lastStartTime: currentTime,
             sessions: data.work.sessions,
+            workTime: data.work.totalWorkTime,
+            breakTime: data.work.totalBreakTime
           }));
         } else {
           // Check if there is an active session
@@ -682,6 +686,8 @@ export default function Home() {
             lastStartTime: currentTime,
             workId: data.workId,
             sessions: data.work.sessions,
+            workTime: data.work.totalWorkTime,
+            breakTime: data.work.totalBreakTime,
             isFinished: false,
           }));
         }
@@ -749,17 +755,21 @@ export default function Home() {
           throw new Error(data.error);
         }
 
+        // Update local timer state with server response
+        const lastSession = data.work.sessions[data.work.sessions.length - 1];
         setTimerState(prev => ({
           ...prev,
           isWorking: false,
           isBreak: true,
           lastStartTime: currentTime,
           sessions: data.work.sessions,
+          workTime: data.work.totalWorkTime,
+          breakTime: data.work.totalBreakTime
         }));
       } catch (error) {
         console.error('Failed to start break:', error);
-        // Fallback to localStorage if API fails
-        startBreakLocally(currentTime);
+        alert(error instanceof Error ? error.message : 'Failed to start break');
+        return;
       }
     } else {
       // Use localStorage for guests
