@@ -5,7 +5,7 @@ import { verifyJwt, getJwtFromCookie } from '@/lib/jwt';
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Get and verify token
@@ -27,7 +27,7 @@ export async function GET(
 
     // Get work session by ID
     const work = await db.collection('works').findOne({
-      _id: new ObjectId(context.params.id),
+      _id: new ObjectId(params.id),
       userId: userData.id
     });
 
