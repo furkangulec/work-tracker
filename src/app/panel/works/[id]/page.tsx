@@ -4,15 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-interface WorkSession {
-  _id: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  type: 'work' | 'break';
-  userId: string;
-}
+import { Work, WorkSession } from '@/types/work';
 
 const translations = {
   tr: {
@@ -29,7 +21,10 @@ const translations = {
       },
       startTime: 'Başlangıç Zamanı',
       endTime: 'Bitiş Zamanı',
-      duration: 'Süre'
+      duration: 'Toplam Çalışma Süresi',
+      status: 'Durum',
+      ongoing: 'Devam Ediyor',
+      completed: 'Tamamlandı'
     }
   },
   en: {
@@ -46,7 +41,10 @@ const translations = {
       },
       startTime: 'Start Time',
       endTime: 'End Time',
-      duration: 'Duration'
+      duration: 'Total Work Time',
+      status: 'Status',
+      ongoing: 'Ongoing',
+      completed: 'Completed'
     }
   },
   ja: {
@@ -63,13 +61,16 @@ const translations = {
       },
       startTime: '開始時間',
       endTime: '終了時間',
-      duration: '期間'
+      duration: '合計作業時間',
+      status: 'ステータス',
+      ongoing: '進行中',
+      completed: '完了'
     }
   }
 };
 
 export default function WorkDetail() {
-  const [work, setWork] = useState<WorkSession | null>(null);
+  const [work, setWork] = useState<Work | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { language } = useLanguage();
@@ -106,8 +107,8 @@ export default function WorkDetail() {
     }
   }, [params.id, router]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString(
       language === 'tr' ? 'tr-TR' : language === 'ja' ? 'ja-JP' : 'en-US',
       {
         year: 'numeric',
@@ -120,7 +121,9 @@ export default function WorkDetail() {
     );
   };
 
-  const formatDuration = (ms: number) => {
+  const formatDuration = (ms: number | undefined) => {
+    if (!ms) return '-';
+    
     const hours = Math.floor(ms / 3600000);
     const minutes = Math.floor((ms % 3600000) / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -137,7 +140,7 @@ export default function WorkDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
             <h2 className="mt-4 text-lg text-gray-600">{t.loading}</h2>
@@ -150,7 +153,7 @@ export default function WorkDetail() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
               <p>{error}</p>
@@ -164,7 +167,7 @@ export default function WorkDetail() {
   if (!work) {
     return (
       <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
               <p>{t.notFound}</p>
@@ -174,6 +177,8 @@ export default function WorkDetail() {
       </div>
     );
   }
+
+  const lastSession = work.sessions[work.sessions.length - 1];
 
   return (
     <div className="min-h-screen bg-gray-100 relative">
@@ -191,7 +196,7 @@ export default function WorkDetail() {
       />
 
       <div className="py-12 relative z-10">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex justify-between items-center">
             <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
             <Link
@@ -204,13 +209,22 @@ export default function WorkDetail() {
 
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
             <div className="px-4 py-5 sm:px-6">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                work.type === 'work' 
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-blue-100 text-blue-800'
-              }`}>
-                {t.details.type[work.type]}
-              </span>
+              <div className="flex items-center space-x-4">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  lastSession?.type === 'work' 
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-blue-100 text-blue-800'
+                }`}>
+                  {t.details.type[lastSession?.type || 'work']}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  work.isFinished
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {work.isFinished ? t.details.completed : t.details.ongoing}
+                </span>
+              </div>
             </div>
             <div className="border-t border-gray-200">
               <dl>
@@ -227,7 +241,7 @@ export default function WorkDetail() {
                     {t.details.endTime}
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {formatDate(work.endTime)}
+                    {work.endTime ? formatDate(work.endTime) : '-'}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -235,7 +249,7 @@ export default function WorkDetail() {
                     {t.details.duration}
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {formatDuration(work.duration)}
+                    {formatDuration(work.totalWorkTime)}
                   </dd>
                 </div>
               </dl>
