@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Footer from './components/Footer';
 
 // Add translations
@@ -401,7 +402,7 @@ export default function Home() {
   const t = translations[language];
 
   // Sunucudan mevcut durumu kontrol eden fonksiyon
-  const syncWithServer = async () => {
+  const syncWithServer = useCallback(async () => {
     if (!user || !timerState.workId) return;
 
     try {
@@ -439,7 +440,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error syncing with server:', error);
     }
-  };
+  }, [user, timerState.workId]);
 
   // Auth check effect
   useEffect(() => {
