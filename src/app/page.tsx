@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Footer from './components/Footer';
 
 // Add translations
@@ -388,6 +388,7 @@ function ConfirmModal({ onConfirm, onCancel, t }: ConfirmModalProps) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [timerState, setTimerState] = useState<TimerState>(initialState);
   const [displayTime, setDisplayTime] = useState('00:00:00');
   const [showReport, setShowReport] = useState(false);
@@ -838,6 +839,10 @@ export default function Home() {
     setShowConfirm(false);
   };
 
+  const handleNavigate = (path: string) => {
+    router.push(path);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col relative">
       {/* Squared notebook background */}
@@ -1064,12 +1069,18 @@ export default function Home() {
                   {t.promo.description}
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <Link href="/register" className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
+                  <button
+                    onClick={() => handleNavigate('/register')}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                  >
                     {t.register}
-                  </Link>
-                  <Link href="/login" className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors border-2 border-indigo-600">
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('/login')}
+                    className="px-6 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium border-2 border-indigo-600"
+                  >
                     {t.login}
-                  </Link>
+                  </button>
                 </div>
               </>
             )}

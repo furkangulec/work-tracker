@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Footer from '../components/Footer';
 
 const translations = {
@@ -160,6 +160,7 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
 }
 
 export default function Login() {
+  const router = useRouter();
   const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -168,6 +169,10 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   
   const t = translations[language];
+
+  const handleNavigate = (path: string) => {
+    router.push(path);
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -196,9 +201,9 @@ export default function Login() {
 
       setSuccess(true);
       
-      // Redirect to home page after successful login
+      // Programmatik yönlendirme
       setTimeout(() => {
-        window.location.href = '/';
+        router.push('/');
       }, 1000);
 
     } catch {
@@ -303,20 +308,20 @@ export default function Login() {
           <div className="mt-8 text-center space-y-4">
             <div className="text-sm text-gray-600">
               {t.noAccount}{' '}
-              <Link 
-                href="/register"
+              <button 
+                onClick={() => handleNavigate('/register')}
                 className="text-indigo-600 hover:text-indigo-700 transition-colors font-medium"
               >
                 {t.register}
-              </Link>
+              </button>
             </div>
             <div>
-              <Link 
-                href="/"
+              <button 
+                onClick={() => handleNavigate('/')}
                 className="text-indigo-600 hover:text-indigo-700 transition-colors font-medium"
               >
                 {t.backToHome}
-              </Link>
+              </button>
             </div>
           </div>
         </div>
