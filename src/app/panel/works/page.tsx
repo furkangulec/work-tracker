@@ -12,14 +12,26 @@ const translations = {
     error: 'Çalışmalar yüklenirken bir hata oluştu',
     noWorks: 'Henüz hiç çalışma kaydınız yok',
     filter: {
-      startDate: 'Başlangıç Tarihi',
-      endDate: 'Bitiş Tarihi',
+      startDate: 'Başlangıç',
+      endDate: 'Bitiş',
       apply: 'Filtrele',
-      clear: 'Temizle'
+      clear: 'Temizle',
+      sort: 'Sıralama',
+      sortOptions: {
+        dateDesc: 'Yeniden Eskiye',
+        dateAsc: 'Eskiden Yeniye',
+        totalTimeDesc: 'Toplam Süre (Azalan)',
+        totalTimeAsc: 'Toplam Süre (Artan)',
+        workTimeDesc: 'Çalışma Süresi (Azalan)',
+        workTimeAsc: 'Çalışma Süresi (Artan)',
+        breakTimeDesc: 'Mola Süresi (Azalan)',
+        breakTimeAsc: 'Mola Süresi (Artan)'
+      }
     },
     workCard: {
       date: 'Tarih',
       duration: 'Toplam Süre',
+      durationTitle: 'Süre Detayları',
       workDuration: 'Çalışma',
       breakDuration: 'Mola',
       work: 'Çalışma',
@@ -33,14 +45,26 @@ const translations = {
     error: 'An error occurred while loading works',
     noWorks: 'You have no work records yet',
     filter: {
-      startDate: 'Start Date',
-      endDate: 'End Date',
-      apply: 'Apply Filter',
-      clear: 'Clear'
+      startDate: 'Start',
+      endDate: 'End',
+      apply: 'Filter',
+      clear: 'Clear',
+      sort: 'Sort',
+      sortOptions: {
+        dateDesc: 'Newest First',
+        dateAsc: 'Oldest First',
+        totalTimeDesc: 'Total Time (Desc)',
+        totalTimeAsc: 'Total Time (Asc)',
+        workTimeDesc: 'Work Time (Desc)',
+        workTimeAsc: 'Work Time (Asc)',
+        breakTimeDesc: 'Break Time (Desc)',
+        breakTimeAsc: 'Break Time (Asc)'
+      }
     },
     workCard: {
       date: 'Date',
       duration: 'Total Duration',
+      durationTitle: 'Duration Details',
       workDuration: 'Work',
       breakDuration: 'Break',
       work: 'Work',
@@ -54,14 +78,26 @@ const translations = {
     error: '作業の読み込み中にエラーが発生しました',
     noWorks: '作業記録はまだありません',
     filter: {
-      startDate: '開始日',
-      endDate: '終了日',
+      startDate: '開始',
+      endDate: '終了',
       apply: 'フィルター',
-      clear: 'クリア'
+      clear: 'クリア',
+      sort: '並び替え',
+      sortOptions: {
+        dateDesc: '新しい順',
+        dateAsc: '古い順',
+        totalTimeDesc: '合計時間 (降順)',
+        totalTimeAsc: '合計時間 (昇順)',
+        workTimeDesc: '作業時間 (降順)',
+        workTimeAsc: '作業時間 (昇順)',
+        breakTimeDesc: '休憩時間 (降順)',
+        breakTimeAsc: '休憩時間 (昇順)'
+      }
     },
     workCard: {
       date: '日付',
       duration: '合計時間',
+      durationTitle: '時間の詳細',
       workDuration: '作業',
       breakDuration: '休憩',
       work: '作業',
@@ -77,9 +113,35 @@ export default function Works() {
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [sortBy, setSortBy] = useState('dateDesc');
   const { language } = useLanguage();
 
   const t = translations[language as keyof typeof translations];
+
+  const sortWorks = (worksToSort: Work[]) => {
+    return [...worksToSort].sort((a, b) => {
+      switch (sortBy) {
+        case 'dateDesc':
+          return b.startTime - a.startTime;
+        case 'dateAsc':
+          return a.startTime - b.startTime;
+        case 'totalTimeDesc':
+          return b.totalWorkTime - a.totalWorkTime;
+        case 'totalTimeAsc':
+          return a.totalWorkTime - b.totalWorkTime;
+        case 'workTimeDesc':
+          return (b.totalWorkTime - (b.totalBreakTime || 0)) - (a.totalWorkTime - (a.totalBreakTime || 0));
+        case 'workTimeAsc':
+          return (a.totalWorkTime - (a.totalBreakTime || 0)) - (b.totalWorkTime - (b.totalBreakTime || 0));
+        case 'breakTimeDesc':
+          return (b.totalBreakTime || 0) - (a.totalBreakTime || 0);
+        case 'breakTimeAsc':
+          return (a.totalBreakTime || 0) - (b.totalBreakTime || 0);
+        default:
+          return 0;
+      }
+    });
+  };
 
   const fetchWorks = async (start?: string, end?: string) => {
     try {
@@ -95,7 +157,7 @@ export default function Works() {
         throw new Error(data.error || 'Failed to fetch works');
       }
 
-      setWorks(data.works);
+      setWorks(sortWorks(data.works));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -106,6 +168,10 @@ export default function Works() {
   useEffect(() => {
     fetchWorks();
   }, []);
+
+  useEffect(() => {
+    setWorks(sortWorks(works));
+  }, [sortBy]);
 
   const handleFilter = () => {
     fetchWorks(startDate, endDate);
@@ -191,8 +257,8 @@ export default function Works() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
             <div className="mt-4 bg-white p-4 rounded-lg shadow-lg border border-gray-100">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-end">
-                <div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12 items-end">
+                <div className="lg:col-span-2">
                   <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
                     {t.filter.startDate}
                   </label>
@@ -201,10 +267,10 @@ export default function Works() {
                     id="startDate"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                    className="mt-1 block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                   />
                 </div>
-                <div>
+                <div className="lg:col-span-2">
                   <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
                     {t.filter.endDate}
                   </label>
@@ -213,19 +279,36 @@ export default function Works() {
                     id="endDate"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                    className="mt-1 block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                   />
                 </div>
-                <div className="flex space-x-2">
+                <div className="lg:col-span-4">
+                  <label htmlFor="sort" className="block text-sm font-medium text-gray-700">
+                    {t.filter.sort}
+                  </label>
+                  <select
+                    id="sort"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="mt-1 block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  >
+                    {Object.entries(t.filter.sortOptions).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex space-x-2 lg:col-span-4">
                   <button
                     onClick={handleFilter}
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="inline-flex justify-center py-1.5 px-3 text-sm border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
                     {t.filter.apply}
                   </button>
                   <button
                     onClick={handleClear}
-                    className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="inline-flex justify-center py-1.5 px-3 text-sm border border-gray-300 shadow-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
                     {t.filter.clear}
                   </button>
@@ -274,19 +357,22 @@ export default function Works() {
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          {t.workCard.duration}
+                        <dt className="text-sm font-medium text-gray-500 mb-3">
+                          {t.workCard.durationTitle}
                         </dt>
-                        <dd className="mt-1 text-sm text-gray-900 flex items-center gap-3">
-                          <span>{formatDuration(work.totalWorkTime)}</span>
-                          <span className="flex items-center gap-2 text-green-700 bg-green-50 px-2 py-1 rounded">
+                        <dd className="mt-2 text-sm text-gray-900 space-y-2.5">
+                          <div className="flex items-center gap-2 text-blue-700 bg-blue-50 px-3 py-1.5 rounded w-full">
+                            <span className="text-xs font-medium">{t.workCard.duration}:</span>
+                            <span className="font-medium">{formatDuration(work.totalWorkTime)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1.5 rounded w-full">
                             <span className="text-xs font-medium">{t.workCard.workDuration}:</span>
                             <span className="font-medium">{formatDuration(work.totalWorkTime - (work.totalBreakTime || 0))}</span>
-                          </span>
-                          <span className="flex items-center gap-2 text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
+                          </div>
+                          <div className="flex items-center gap-2 text-yellow-700 bg-yellow-50 px-3 py-1.5 rounded w-full">
                             <span className="text-xs font-medium">{t.workCard.breakDuration}:</span>
                             <span className="font-medium">{formatDuration(work.totalBreakTime || 0)}</span>
-                          </span>
+                          </div>
                         </dd>
                       </div>
                     </div>
