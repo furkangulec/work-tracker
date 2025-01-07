@@ -11,6 +11,7 @@ const translations = {
     loading: 'Çalışmalar yükleniyor...',
     error: 'Çalışmalar yüklenirken bir hata oluştu',
     noWorks: 'Henüz hiç çalışma kaydınız yok',
+    noFilteredWorks: 'Aradığınız kriterlere göre çalışma kaydı bulunamadı',
     filter: {
       startDate: 'Başlangıç',
       endDate: 'Bitiş',
@@ -44,6 +45,7 @@ const translations = {
     loading: 'Loading works...',
     error: 'An error occurred while loading works',
     noWorks: 'You have no work records yet',
+    noFilteredWorks: 'No work records found matching your criteria',
     filter: {
       startDate: 'Start',
       endDate: 'End',
@@ -77,6 +79,7 @@ const translations = {
     loading: '作業を読み込んでいます...',
     error: '作業の読み込み中にエラーが発生しました',
     noWorks: '作業記録はまだありません',
+    noFilteredWorks: '検索条件に一致する作業記録が見つかりませんでした',
     filter: {
       startDate: '開始',
       endDate: '終了',
@@ -210,6 +213,8 @@ export default function Works() {
     }
   };
 
+  const isFilterActive = startDate !== '' || endDate !== '';
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 py-12">
@@ -319,7 +324,9 @@ export default function Works() {
 
           {works.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">{t.noWorks}</p>
+              <p className="text-gray-500">
+                {isFilterActive ? t.noFilteredWorks : t.noWorks}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
