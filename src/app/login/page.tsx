@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from './translations';
-import { LanguageButton } from './components/LanguageButton';
+import { LanguageButton } from '@/components/shared/LanguageButton';
 import { LoginForm } from './components/LoginForm';
+import { Footer } from '@/components/shared/Footer';
 
 export default function Login() {
   const router = useRouter();
@@ -106,6 +107,8 @@ export default function Login() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 } 

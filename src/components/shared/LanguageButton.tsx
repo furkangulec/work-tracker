@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LanguageButtonProps, LanguageOption } from '../types';
+import { LanguageButtonProps, LanguageOption } from './types';
 
 const languages: LanguageOption[] = [
   {
