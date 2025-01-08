@@ -370,7 +370,22 @@ export default function NotesPage() {
               className={`w-full h-32 bg-transparent border-none resize-none focus:ring-0 text-gray-700 placeholder-gray-500`}
               style={{ fontFamily: "'Comic Sans MS', cursive" }}
             />
-            <div className="absolute -top-3 -left-3 w-6 h-6 bg-gray-300 rounded-full shadow-inner border-2 border-gray-400" />
+            {/* Pushpin design */}
+            <div className="absolute -top-3 -left-3 w-7 h-7 rounded-full shadow-lg transform hover:scale-105 transition-transform" style={{
+              background: 'radial-gradient(circle at 40% 40%, #f8fafc 0%, #cbd5e1 100%)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              boxShadow: `
+                0 2px 4px rgba(0,0,0,0.1),
+                inset 0 2px 4px rgba(255,255,255,0.5),
+                inset 0 -2px 4px rgba(0,0,0,0.1),
+                0 0 0 3px rgba(0,0,0,0.05)
+              `
+            }}>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full" style={{
+                background: 'radial-gradient(circle at 30% 30%, #475569 0%, #1e293b 100%)',
+                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)'
+              }} />
+            </div>
           </motion.div>
         ))}
       </div>
