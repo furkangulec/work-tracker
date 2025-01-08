@@ -48,18 +48,45 @@ export default function NotesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-amber-800/90 p-8">
-      {/* Cork board background */}
-      <div className="fixed inset-0 bg-repeat z-0" 
+    <div className="min-h-screen p-8" style={{
+      background: `
+        repeating-linear-gradient(
+          45deg,
+          rgb(191, 129, 82),
+          rgb(191, 129, 82) 2px,
+          rgb(186, 124, 77) 2px,
+          rgb(186, 124, 77) 4px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          rgb(191, 129, 82),
+          rgb(191, 129, 82) 2px,
+          rgb(186, 124, 77) 2px,
+          rgb(186, 124, 77) 4px
+        ),
+        linear-gradient(
+          to bottom,
+          rgb(181, 119, 72),
+          rgb(181, 119, 72)
+        )
+      `,
+      boxShadow: 'inset 0 0 100px rgba(0,0,0,0.2)'
+    }}>
+      {/* Cork board texture overlay */}
+      <div 
+        className="fixed inset-0 bg-repeat opacity-50 mix-blend-overlay pointer-events-none" 
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: '30px 30px'
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='25' cy='25' r='1' /%3E%3Ccircle cx='75' cy='25' r='1' /%3E%3Ccircle cx='25' cy='75' r='1' /%3E%3Ccircle cx='75' cy='75' r='1' /%3E%3Ccircle cx='50' cy='50' r='1' /%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '50px 50px'
         }}
       />
 
       {/* Header */}
       <div className="relative z-10 flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Notlarım</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-white drop-shadow-lg">Notlarım</h1>
+          <div className="h-1 w-32 bg-white/20 rounded-full shadow-sm"></div>
+        </div>
         <button
           onClick={createNewNote}
           className="px-6 py-3 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium transform hover:scale-105"
@@ -83,13 +110,14 @@ export default function NotesPage() {
               scale: 1,
               rotate: note.rotation
             }}
-            className={`absolute w-64 ${note.color} p-4 rounded-lg shadow-lg cursor-move`}
+            className={`absolute w-64 ${note.color} p-4 rounded-lg shadow-xl cursor-move backdrop-blur-sm backdrop-brightness-110`}
             style={{
               x: note.position.x,
-              y: note.position.y
+              y: note.position.y,
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05)'
             }}
-            whileHover={{ scale: 1.05 }}
-            whileDrag={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05, boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}
+            whileDrag={{ scale: 1.1, boxShadow: '0 8px 12px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}
           >
             <div className="flex justify-end mb-2">
               <button
