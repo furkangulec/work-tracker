@@ -8,7 +8,7 @@ interface Note {
   content: string;
   position: { x: number; y: number };
   color: string;
-  rotation: number;
+  zIndex: number;
 }
 
 const colors = [
@@ -21,7 +21,7 @@ const colors = [
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
+  const [maxZIndex, setMaxZIndex] = useState(1);
 
   const createNewNote = () => {
     const newNote: Note = {
@@ -32,9 +32,10 @@ export default function NotesPage() {
         y: Math.random() * (window.innerHeight / 2 - 200)
       },
       color: colors[Math.floor(Math.random() * colors.length)],
-      rotation: Math.random() * 10 - 5 // -5 to +5 degrees
+      zIndex: maxZIndex
     };
     setNotes([...notes, newNote]);
+    setMaxZIndex(prev => prev + 1);
   };
 
   const updateNoteContent = (id: string, content: string) => {
@@ -45,6 +46,13 @@ export default function NotesPage() {
 
   const deleteNote = (id: string) => {
     setNotes(notes.filter(note => note.id !== id));
+  };
+
+  const bringToFront = (id: string) => {
+    setNotes(notes.map(note => 
+      note.id === id ? { ...note, zIndex: maxZIndex } : note
+    ));
+    setMaxZIndex(prev => prev + 1);
   };
 
   return (
@@ -106,20 +114,27 @@ export default function NotesPage() {
             drag
             dragMomentum={false}
             initial={{ scale: 0 }}
-            animate={{ 
-              scale: 1,
-              rotate: note.rotation
-            }}
-            className={`absolute w-64 ${note.color} p-4 rounded-lg shadow-xl cursor-move backdrop-blur-sm backdrop-brightness-110`}
+            animate={{ scale: 1 }}
+            className={`absolute w-64 ${note.color} p-4 rounded-lg shadow-xl cursor-move backdrop-blur-sm backdrop-brightness-110 group`}
             style={{
               x: note.position.x,
               y: note.position.y,
+              zIndex: note.zIndex,
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05)'
             }}
             whileHover={{ scale: 1.05, boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}
             whileDrag={{ scale: 1.1, boxShadow: '0 8px 12px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}
           >
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-between mb-2">
+              <button
+                onClick={() => bringToFront(note.id)}
+                className="text-gray-500 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100"
+                title="Öne Getir"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
               <button
                 onClick={() => deleteNote(note.id)}
                 className="text-gray-500 hover:text-red-500 transition-colors"
