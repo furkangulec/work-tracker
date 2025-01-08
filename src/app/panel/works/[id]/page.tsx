@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -72,11 +72,7 @@ export default function WorkDetail() {
 
   const t = translations[language as keyof typeof translations];
 
-  useEffect(() => {
-    fetchWorkDetail();
-  }, [params.id]);
-
-  async function fetchWorkDetail() {
+  const fetchWorkDetail = useCallback(async () => {
     try {
       const response = await fetch(`/api/work/${params.id}`);
       const data = await response.json();
@@ -96,7 +92,11 @@ export default function WorkDetail() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchWorkDetail();
+  }, [fetchWorkDetail]);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString(

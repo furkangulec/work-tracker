@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { Note } from '@/app/notes/types';
 
 // Get notes for a specific work session
 export async function GET(request: Request) {
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     await db.collection('notes').deleteMany({ workId: new ObjectId(workId) });
 
     // Insert new notes with workId
-    const notesWithWorkId = notes.map((note: any) => ({
+    const notesWithWorkId = notes.map((note: Note) => ({
       ...note,
       workId: new ObjectId(workId),
       updatedAt: new Date()

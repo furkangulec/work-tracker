@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Chakra_Petch } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const inter = Inter({ subsets: ["latin"] });
+const chakraPetch = Chakra_Petch({ 
+  weight: ['400', '500', '600', '700'],
+  subsets: ["latin"],
+  variable: '--font-chakra-petch'
+});
 
 export const metadata: Metadata = {
   title: "Chronos",
@@ -19,9 +24,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" />
-        <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${chakraPetch.variable}`}>
         <LanguageProvider>
           {children}
         </LanguageProvider>

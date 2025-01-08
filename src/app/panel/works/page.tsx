@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { Work } from '@/types/work';
@@ -124,32 +124,20 @@ export default function Works() {
 
   const t = translations[language as keyof typeof translations];
 
-  const sortWorks = (worksToSort: Work[]) => {
+  const sortWorks = useCallback((worksToSort: Work[]) => {
     return [...worksToSort].sort((a, b) => {
-      switch (sortBy) {
-        case 'dateDesc':
-          return b.startTime - a.startTime;
-        case 'dateAsc':
-          return a.startTime - b.startTime;
-        case 'totalTimeDesc':
-          return b.totalWorkTime - a.totalWorkTime;
-        case 'totalTimeAsc':
-          return a.totalWorkTime - b.totalWorkTime;
-        case 'workTimeDesc':
-          return (b.totalWorkTime - (b.totalBreakTime || 0)) - (a.totalWorkTime - (a.totalBreakTime || 0));
-        case 'workTimeAsc':
-          return (a.totalWorkTime - (a.totalBreakTime || 0)) - (b.totalWorkTime - (b.totalBreakTime || 0));
-        case 'breakTimeDesc':
-          return (b.totalBreakTime || 0) - (a.totalBreakTime || 0);
-        case 'breakTimeAsc':
-          return (a.totalBreakTime || 0) - (b.totalBreakTime || 0);
-        default:
-          return 0;
+      if (sortBy === 'date') {
+        return b.startTime - a.startTime;
+      } else if (sortBy === 'duration') {
+        const aDuration = (a.totalWorkTime || 0) + (a.totalBreakTime || 0);
+        const bDuration = (b.totalWorkTime || 0) + (b.totalBreakTime || 0);
+        return bDuration - aDuration;
       }
+      return 0;
     });
-  };
+  }, [sortBy]);
 
-  const fetchWorks = async (start?: string, end?: string) => {
+  const fetchWorks = useCallback(async (start?: string, end?: string) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -169,15 +157,15 @@ export default function Works() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortWorks]);
 
   useEffect(() => {
     fetchWorks();
-  }, []);
+  }, [fetchWorks]);
 
   useEffect(() => {
-    setWorks(sortWorks(works));
-  }, [sortBy]);
+    setWorks(prevWorks => sortWorks(prevWorks));
+  }, [sortBy, sortWorks]);
 
   const handleFilter = () => {
     fetchWorks(startDate, endDate);

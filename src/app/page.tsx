@@ -849,7 +849,6 @@ export default function Home() {
           }
 
           // Update local timer state with server response
-          const lastSession = data.work.sessions[data.work.sessions.length - 1];
           setTimerState(prev => ({
             ...prev,
             isWorking: true,
@@ -904,11 +903,10 @@ export default function Home() {
   const startWorkLocally = (currentTime: number) => {
     setTimerState(prev => {
       const sessions = prev.sessions || [];
-      const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
-      // Eğer aktif bir oturum varsa, bitir
-      if (lastSession && !lastSession.endTime) {
-        lastSession.endTime = currentTime;
+      // Close the last session if it's still open
+      if (sessions.length > 0 && !sessions[sessions.length - 1].endTime) {
+        sessions[sessions.length - 1].endTime = currentTime;
       }
 
       // Yeni çalışma oturumu başlat
@@ -955,7 +953,6 @@ export default function Home() {
         }
 
         // Update local timer state with server response
-        const lastSession = data.work.sessions[data.work.sessions.length - 1];
         setTimerState(prev => ({
           ...prev,
           isWorking: false,
@@ -979,11 +976,10 @@ export default function Home() {
   const startBreakLocally = (currentTime: number) => {
     setTimerState(prev => {
       const sessions = prev.sessions || [];
-      const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
-      // Eğer aktif bir oturum varsa, bitir
-      if (lastSession && !lastSession.endTime) {
-        lastSession.endTime = currentTime;
+      // Close the last session if it's still open
+      if (sessions.length > 0 && !sessions[sessions.length - 1].endTime) {
+        sessions[sessions.length - 1].endTime = currentTime;
       }
 
       // Yeni mola oturumu başlat
@@ -1050,11 +1046,10 @@ export default function Home() {
   const finishWorkLocally = (currentTime: number) => {
     setTimerState(prev => {
       const sessions = prev.sessions || [];
-      const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
       
       // Close the last session if it's still open
-      if (lastSession && lastSession.endTime === null) {
-        lastSession.endTime = currentTime;
+      if (sessions.length > 0 && !sessions[sessions.length - 1].endTime) {
+        sessions[sessions.length - 1].endTime = currentTime;
       }
 
       // Calculate total work and break times from all sessions

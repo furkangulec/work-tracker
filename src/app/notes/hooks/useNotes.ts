@@ -1,6 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Note } from '../types';
 
+interface MongoDBNote {
+  _id?: string;
+  id?: string;
+  content: string;
+  color: string;
+  zIndex: number;
+  position: { x: number; y: number };
+}
+
 const colors = [
   'bg-yellow-100',
   'bg-pink-100',
@@ -25,7 +34,7 @@ export function useNotes(workId: string | null) {
       const data = await response.json();
 
       if (data.success && data.notes) {
-        const transformedNotes = data.notes.map((note: any) => ({
+        const transformedNotes = data.notes.map((note: MongoDBNote) => ({
           id: note._id || note.id,
           content: note.content,
           color: note.color,
