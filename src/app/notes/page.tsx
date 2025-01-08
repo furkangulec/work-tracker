@@ -61,7 +61,7 @@ export default function NotesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [workId, setWorkId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Load notes when page loads
   useEffect(() => {
@@ -71,9 +71,18 @@ export default function NotesPage() {
         const data = await response.json();
 
         if (data.success && data.notes) {
-          setNotes(data.notes);
+          // Transform loaded notes to include position data
+          const transformedNotes = data.notes.map((note: any) => ({
+            id: note._id || note.id,
+            content: note.content,
+            color: note.color,
+            zIndex: note.zIndex,
+            position: note.position || { x: 0, y: 0 }
+          }));
+          
+          setNotes(transformedNotes);
           // Find highest zIndex
-          const maxZ = data.notes.reduce((max: number, note: Note) => 
+          const maxZ = transformedNotes.reduce((max: number, note: Note) => 
             Math.max(max, note.zIndex), 0);
           setMaxZIndex(maxZ + 1);
         }
@@ -214,6 +223,13 @@ export default function NotesPage() {
     }
   };
 
+  // Update note position when dragged
+  const updateNotePosition = (id: string, position: { x: number; y: number }) => {
+    setNotes(notes.map(note =>
+      note.id === id ? { ...note, position } : note
+    ));
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -301,12 +317,19 @@ export default function NotesPage() {
             key={note.id}
             drag
             dragMomentum={false}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            initial={{ scale: 0, x: note.position.x, y: note.position.y }}
+            animate={{ 
+              scale: 1,
+              x: note.position.x,
+              y: note.position.y
+            }}
+            onDragEnd={(event, info) => {
+              const newX = note.position.x + info.offset.x;
+              const newY = note.position.y + info.offset.y;
+              updateNotePosition(note.id, { x: newX, y: newY });
+            }}
             className={`absolute w-64 ${note.color} p-4 rounded-lg shadow-xl cursor-move backdrop-blur-sm backdrop-brightness-110 group`}
             style={{
-              x: note.position.x,
-              y: note.position.y,
               zIndex: note.zIndex,
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05)'
             }}
