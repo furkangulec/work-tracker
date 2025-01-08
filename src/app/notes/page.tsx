@@ -19,9 +19,43 @@ const colors = [
   'bg-purple-100',
 ];
 
+interface DeleteModalProps {
+  onConfirm: () => void;
+  onCancel: () => void;
+  content: string;
+}
+
+function DeleteModal({ onConfirm, onCancel, content }: DeleteModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Notu Silmek İstediğinize Emin Misiniz?</h2>
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <p className="text-gray-600 line-clamp-3">{content}</p>
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          >
+            Evet, Sil
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            İptal
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(1);
+  const [deleteModal, setDeleteModal] = useState<{ id: string; content: string } | null>(null);
 
   const createNewNote = () => {
     const newNote: Note = {
@@ -53,6 +87,21 @@ export default function NotesPage() {
       note.id === id ? { ...note, zIndex: maxZIndex } : note
     ));
     setMaxZIndex(prev => prev + 1);
+  };
+
+  const handleDeleteClick = (id: string, content: string) => {
+    if (content.trim() === '') {
+      deleteNote(id);
+    } else {
+      setDeleteModal({ id, content });
+    }
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteModal) {
+      deleteNote(deleteModal.id);
+      setDeleteModal(null);
+    }
   };
 
   return (
@@ -136,7 +185,7 @@ export default function NotesPage() {
                 </svg>
               </button>
               <button
-                onClick={() => deleteNote(note.id)}
+                onClick={() => handleDeleteClick(note.id, note.content)}
                 className="text-gray-500 hover:text-red-500 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,6 +204,15 @@ export default function NotesPage() {
           </motion.div>
         ))}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal && (
+        <DeleteModal
+          content={deleteModal.content}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteModal(null)}
+        />
+      )}
     </div>
   );
 } 
