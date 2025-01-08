@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, Reorder } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -59,9 +59,29 @@ export default function NotesPage() {
   const [maxZIndex, setMaxZIndex] = useState(1);
   const [deleteModal, setDeleteModal] = useState<{ id: string; content: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [workId, setWorkId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Auth & active work session check
+  // Load notes when page loads
   useEffect(() => {
+    const loadNotes = async (workId: string) => {
+      try {
+        const response = await fetch(`/api/notes?workId=${workId}`);
+        const data = await response.json();
+
+        if (data.success && data.notes) {
+          setNotes(data.notes);
+          // Find highest zIndex
+          const maxZ = data.notes.reduce((max: number, note: Note) => 
+            Math.max(max, note.zIndex), 0);
+          setMaxZIndex(maxZ + 1);
+        }
+      } catch (error) {
+        console.error('Error loading notes:', error);
+      }
+    };
+
     const checkAccess = async () => {
       try {
         // Check if user is logged in
@@ -82,6 +102,8 @@ export default function NotesPage() {
           return;
         }
 
+        setWorkId(activeWorkData.activeWork.workId);
+        await loadNotes(activeWorkData.activeWork.workId);
         setIsLoading(false);
       } catch (error) {
         console.error('Access check error:', error);
@@ -91,6 +113,59 @@ export default function NotesPage() {
 
     checkAccess();
   }, [router]);
+
+  const saveNotes = useCallback(async () => {
+    if (!workId) return;
+
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workId,
+          notes: notes.map(note => ({
+            ...note,
+            position: {
+              x: note.position.x,
+              y: note.position.y
+            }
+          }))
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save notes');
+      }
+    } catch (error) {
+      console.error('Error saving notes:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [workId, notes]);
+
+  // Auto-save notes when they change
+  useEffect(() => {
+    if (!workId || notes.length === 0) return;
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save
+    saveTimeoutRef.current = setTimeout(() => {
+      saveNotes();
+    }, 1000); // Auto-save 1 second after last change
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [notes, workId, saveNotes]);
 
   const createNewNote = () => {
     const newNote: Note = {
@@ -196,6 +271,16 @@ export default function NotesPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Yeni Not
+          </button>
+          <button
+            onClick={saveNotes}
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSaving}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
           </button>
           <button
             onClick={() => router.push('/')}
