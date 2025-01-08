@@ -36,6 +36,7 @@ const translations = {
       report: 'Rapor',
       yes: 'Evet, Bitir',
       cancel: 'İptal',
+      continue: 'Devam Et',
       addNote: 'Not Ekle'
     },
     labels: {
@@ -59,6 +60,25 @@ const translations = {
       message: 'Çıkış yapmak istediğinize emin misiniz?',
       confirm: 'Evet, Çıkış Yap',
       cancel: 'İptal'
+    },
+    techniqueModal: {
+      title: 'Çalışma Tekniği',
+      message: 'Çalışma tekniği seçmek ister misiniz?',
+      select: 'Çalışma Tekniği Seç',
+      techniques: {
+        pomodoro: {
+          name: 'Pomodoro Tekniği',
+          info: '25 dakika çalışma ve 5 dakika mola döngüsüne dayalı zaman yönetimi tekniği.'
+        },
+        "52-17": {
+          name: '52/17 Tekniği',
+          info: '52 dakika çalışma ve 17 dakika mola döngüsüne dayalı, uzun odaklanma süreleri için ideal teknik.'
+        },
+        "90-20": {
+          name: '90/20 Tekniği',
+          info: '90 dakika yoğun çalışma ve 20 dakika mola döngüsüne dayalı, derin öğrenme ve karmaşık görevler için uygun teknik.'
+        }
+      }
     }
   },
   en: {
@@ -89,6 +109,7 @@ const translations = {
       report: 'Report',
       yes: 'Yes, Finish',
       cancel: 'Cancel',
+      continue: 'Continue',
       addNote: 'Add Note'
     },
     labels: {
@@ -112,6 +133,25 @@ const translations = {
       message: 'Are you sure you want to logout?',
       confirm: 'Yes, Logout',
       cancel: 'Cancel'
+    },
+    techniqueModal: {
+      title: 'Work Technique',
+      message: 'Would you like to choose a work technique?',
+      select: 'Select Work Technique',
+      techniques: {
+        pomodoro: {
+          name: 'Pomodoro Technique',
+          info: 'Time management technique based on 25-minute work and 5-minute break cycles.'
+        },
+        "52-17": {
+          name: '52/17 Technique',
+          info: 'Based on 52 minutes of work and 17 minutes of break cycles, ideal for long focus periods.'
+        },
+        "90-20": {
+          name: '90/20 Technique',
+          info: 'Based on 90 minutes of intense work and 20 minutes of break cycles, suitable for deep learning and complex tasks.'
+        }
+      }
     }
   },
   ja: {
@@ -142,6 +182,7 @@ const translations = {
       report: 'レポート',
       yes: 'はい、終了します',
       cancel: 'キャンセル',
+      continue: '続ける',
       addNote: 'メモを追加'
     },
     labels: {
@@ -165,6 +206,25 @@ const translations = {
       message: 'ログアウトしてもよろしいですか？',
       confirm: 'はい、ログアウトします',
       cancel: 'キャンセル'
+    },
+    techniqueModal: {
+      title: '作業手法',
+      message: '作業手法を選択してもよろしいですか？',
+      select: '作業手法を選択',
+      techniques: {
+        pomodoro: {
+          name: 'ポモドーロ・テクニック',
+          info: '25分の作業と5分の休憩を周期とする時間管理手法。'
+        },
+        "52-17": {
+          name: '52/17テクニック',
+          info: '52分の作業と17分の休憩を周期とする、長時間の集中に適した手法。'
+        },
+        "90-20": {
+          name: '90/20テクニック',
+          info: '90分の集中作業と20分の休憩を周期とする、深い学習や複雑なタスクに適した手法。'
+        }
+      }
     }
   }
 };
@@ -351,7 +411,7 @@ function ReportModal({ timerState, onClose, formatDateTime, t }: ReportModalProp
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-semibold text-lg text-gray-800">
-                    {session.type === 'work' ? `🎯 ${t.labels.workSession}` : `☕ ${t.labels.breakSession}`} #{index + 1}
+                    {session.type === 'work' ? `🎯 ${t.labels.workSession}` : `☕☕ ${t.labels.breakSession}`} #{index + 1}
                   </div>
                   {session.endTime && (
                     <div className={`font-mono font-bold ${
@@ -448,6 +508,76 @@ function LogoutModal({ onConfirm, onCancel, t }: LogoutModalProps) {
   );
 }
 
+interface TechniqueModalProps {
+  onConfirm: () => void;
+  onCancel: () => void;
+  t: typeof translations.tr | typeof translations.en | typeof translations.ja;
+}
+
+function TechniqueModal({ onConfirm, onCancel, t }: TechniqueModalProps) {
+  const [showTechniqueList, setShowTechniqueList] = useState(false);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        {!showTechniqueList ? (
+          <>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900">{t.techniqueModal.title}</h2>
+            <p className="mb-6 text-gray-900">{t.techniqueModal.message}</p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={onCancel}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                {t.buttons.cancel}
+              </button>
+              <button
+                onClick={() => setShowTechniqueList(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                {t.buttons.continue}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900">{t.techniqueModal.select}</h2>
+            <div className="space-y-3 mb-6">
+              {Object.entries(t.techniqueModal.techniques).map(([key, technique]) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-500 cursor-pointer group transition-colors"
+                  onClick={onConfirm}
+                >
+                  <span className="text-gray-900">{technique.name}</span>
+                  <div className="relative">
+                    <div className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-blue-500 cursor-help">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                        {technique.info}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={onCancel}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                {t.buttons.cancel}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
   const [timerState, setTimerState] = useState<TimerState>(initialState);
@@ -458,6 +588,7 @@ export default function Home() {
   const [user, setUser] = useState<{ id: string; email: string; firstName: string; lastName: string } | null>(null);
   const lastSyncTime = useRef<number>(Date.now());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showTechniqueModal, setShowTechniqueModal] = useState(false);
 
   // Get translations for current language
   const t = translations[language];
@@ -1006,6 +1137,19 @@ export default function Home() {
     setShowLogoutModal(false);
   };
 
+  const handleStartWorkClick = () => {
+    setShowTechniqueModal(true);
+  };
+
+  const handleTechniqueConfirm = () => {
+    setShowTechniqueModal(false);
+    startWork();
+  };
+
+  const handleTechniqueCancel = () => {
+    setShowTechniqueModal(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col relative">
       {/* Squared notebook background */}
@@ -1068,8 +1212,9 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {!timerState.isWorking && !timerState.isBreak && (
                   <button
-                    onClick={startWork}
+                    onClick={handleStartWorkClick}
                     className="w-full py-3 sm:py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-base sm:text-lg"
+                    disabled={timerState.isWorking || timerState.isBreak}
                   >
                     {t.buttons.startWork}
                   </button>
@@ -1309,6 +1454,14 @@ export default function Home() {
         <LogoutModal
           onConfirm={handleLogoutConfirm}
           onCancel={handleLogoutCancel}
+          t={t}
+        />
+      )}
+
+      {showTechniqueModal && (
+        <TechniqueModal
+          onConfirm={handleTechniqueConfirm}
+          onCancel={handleTechniqueCancel}
           t={t}
         />
       )}
