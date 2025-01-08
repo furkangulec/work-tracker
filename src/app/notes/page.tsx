@@ -3,6 +3,49 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, Reorder } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const translations = {
+  tr: {
+    title: 'Notlarım',
+    newNote: 'Yeni Not',
+    save: 'Kaydet',
+    saving: 'Kaydediliyor...',
+    close: 'Kapat',
+    loading: 'Yükleniyor...',
+    deleteModal: {
+      title: 'Notu Silmek İstediğinize Emin Misiniz?',
+      confirm: 'Evet, Sil',
+      cancel: 'İptal'
+    }
+  },
+  en: {
+    title: 'My Notes',
+    newNote: 'New Note',
+    save: 'Save',
+    saving: 'Saving...',
+    close: 'Close',
+    loading: 'Loading...',
+    deleteModal: {
+      title: 'Are you sure you want to delete this note?',
+      confirm: 'Yes, Delete',
+      cancel: 'Cancel'
+    }
+  },
+  ja: {
+    title: 'メモ帳',
+    newNote: '新規メモ',
+    save: '保存',
+    saving: '保存中...',
+    close: '閉じる',
+    loading: '読み込み中...',
+    deleteModal: {
+      title: 'このメモを削除してもよろしいですか？',
+      confirm: 'はい、削除します',
+      cancel: 'キャンセル'
+    }
+  }
+};
 
 interface Note {
   id: string;
@@ -27,10 +70,13 @@ interface DeleteModalProps {
 }
 
 function DeleteModal({ onConfirm, onCancel, content }: DeleteModalProps) {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Notu Silmek İstediğinize Emin Misiniz?</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">{t.deleteModal.title}</h2>
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <p className="text-gray-600 line-clamp-3">{content}</p>
         </div>
@@ -39,13 +85,13 @@ function DeleteModal({ onConfirm, onCancel, content }: DeleteModalProps) {
             onClick={onConfirm}
             className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
-            Evet, Sil
+            {t.deleteModal.confirm}
           </button>
           <button
             onClick={onCancel}
             className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
           >
-            İptal
+            {t.deleteModal.cancel}
           </button>
         </div>
       </div>
@@ -55,6 +101,8 @@ function DeleteModal({ onConfirm, onCancel, content }: DeleteModalProps) {
 
 export default function NotesPage() {
   const router = useRouter();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [notes, setNotes] = useState<Note[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(1);
   const [deleteModal, setDeleteModal] = useState<{ id: string; content: string } | null>(null);
@@ -233,7 +281,7 @@ export default function NotesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-gray-600">Yükleniyor...</div>
+        <div className="text-gray-600">{t.loading}</div>
       </div>
     );
   }
@@ -276,7 +324,7 @@ export default function NotesPage() {
       <div className="absolute top-0 left-0 right-0 z-50 p-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-white drop-shadow-lg">Notlarım</h1>
+            <h1 className="text-3xl font-bold text-white drop-shadow-lg">{t.title}</h1>
             <div className="h-1 w-32 bg-white/20 rounded-full shadow-sm"></div>
           </div>
           <div className="flex items-center gap-4">
@@ -287,7 +335,7 @@ export default function NotesPage() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Yeni Not
+              {t.newNote}
             </button>
             <button
               onClick={saveNotes}
@@ -297,7 +345,7 @@ export default function NotesPage() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
               </svg>
-              {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+              {isSaving ? t.saving : t.save}
             </button>
             <button
               onClick={() => router.push('/')}
@@ -306,7 +354,7 @@ export default function NotesPage() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              Kapat
+              {t.close}
             </button>
           </div>
         </div>
