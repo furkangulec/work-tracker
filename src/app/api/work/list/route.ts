@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { Work } from '@/types/work';
 import { verifyJwt, getJwtFromCookie } from '@/lib/jwt';
+import { ObjectId } from 'mongodb';
 
 type WorkQuery = {
   userId: string;
@@ -35,6 +36,7 @@ export async function GET(request: Request) {
     const client = await clientPromise;
     const db = client.db('work-tracker');
     const works = db.collection<Work>('works');
+    const notes = db.collection('notes');
 
     // Build query
     const query: WorkQuery = { userId: userData.id };
@@ -49,13 +51,21 @@ export async function GET(request: Request) {
       }
     }
 
-    // Get filtered work sessions for the user, sorted by start time in descending order
-    const userWorks = await works
-      .find(query)
-      .sort({ startTime: -1 })
-      .toArray();
+    // Get filtered work sessions for the user
+    const userWorks = await works.find(query).sort({ startTime: -1 }).toArray();
 
-    return NextResponse.json({ success: true, works: userWorks });
+    // Check for notes for each work
+    const worksWithNotes = await Promise.all(
+      userWorks.map(async (work) => {
+        const hasNotes = await notes.countDocuments({ workId: new ObjectId(work._id) }, { limit: 1 });
+        return {
+          ...work,
+          hasNotes: hasNotes > 0
+        };
+      })
+    );
+
+    return NextResponse.json({ success: true, works: worksWithNotes });
   } catch (error) {
     console.error('Failed to fetch work list:', error);
     return NextResponse.json(

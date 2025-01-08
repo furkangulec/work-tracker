@@ -37,7 +37,8 @@ const translations = {
       breakDuration: 'Mola',
       work: 'Çalışma',
       ongoing: 'Devam Ediyor',
-      viewDetails: 'Detayları Gör'
+      viewDetails: 'Detayları Gör',
+      hasNotes: 'Bu çalışmaya ait notlarınız mevcut'
     }
   },
   en: {
@@ -71,7 +72,8 @@ const translations = {
       breakDuration: 'Break',
       work: 'Work',
       ongoing: 'Ongoing',
-      viewDetails: 'View Details'
+      viewDetails: 'View Details',
+      hasNotes: 'This work has notes'
     }
   },
   ja: {
@@ -105,7 +107,8 @@ const translations = {
       breakDuration: '休憩',
       work: '作業',
       ongoing: '進行中',
-      viewDetails: '詳細を見る'
+      viewDetails: '詳細を見る',
+      hasNotes: 'このワークにメモがあります'
     }
   }
 };
@@ -345,6 +348,35 @@ export default function Works() {
                           <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
                             {t.workCard.ongoing}
                           </span>
+                        )}
+                        {work.hasNotes && (
+                          <div className="group relative inline-block">
+                            <div 
+                              className="text-yellow-600 cursor-help"
+                            >
+                              <svg 
+                                className="w-5 h-5" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round" 
+                                  strokeWidth={2} 
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
+                                />
+                              </svg>
+                            </div>
+                            <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 z-50 hidden group-hover:block">
+                              <div className="bg-gray-900 text-white text-xs rounded py-1.5 px-3 whitespace-nowrap">
+                                {t.workCard.hasNotes}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2">
+                                  <div className="border-4 border-transparent border-b-gray-900"></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
                       <Link

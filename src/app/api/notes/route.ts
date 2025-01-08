@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 // Get notes for a specific work session
@@ -12,7 +12,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Work ID is required' }, { status: 400 });
     }
 
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db('work-tracker');
     const notes = await db.collection('notes').find({ workId: new ObjectId(workId) }).toArray();
 
     return NextResponse.json({ success: true, notes });
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Work ID and notes are required' }, { status: 400 });
     }
 
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db('work-tracker');
 
     // Delete existing notes for this work session
     await db.collection('notes').deleteMany({ workId: new ObjectId(workId) });

@@ -15,4 +15,5 @@ export interface Work {
   sessions: WorkSession[];
   totalWorkTime: number;
   totalBreakTime: number;
+  hasNotes?: boolean;
 } 
