@@ -106,7 +106,10 @@ export default function PanelLayout({
             </label>
             <select
               value={language}
-              onChange={(e) => setLanguage(e.target.value as 'tr' | 'en' | 'ja')}
+              onChange={(e) => {
+                console.log('Panel layout language change:', e.target.value);
+                setLanguage(e.target.value as 'tr' | 'en' | 'ja');
+              }}
               className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base font-medium text-black"
             >
               <option value="tr" className="text-base font-medium text-black">🇹🇷 Türkçe</option>

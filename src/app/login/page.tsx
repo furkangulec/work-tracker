@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '../components/Footer';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const translations = {
   tr: {
@@ -161,7 +162,7 @@ function LanguageButton({ currentLang, onLanguageChange }: LanguageButtonProps) 
 
 export default function Login() {
   const router = useRouter();
-  const [language, setLanguage] = useState<'tr' | 'en' | 'ja'>('tr');
+  const { language, setLanguage } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
