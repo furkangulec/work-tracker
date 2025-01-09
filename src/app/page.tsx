@@ -10,7 +10,7 @@ import { useTimer } from './home/hooks/useTimer';
 import { useWorkSession } from './home/hooks/useWorkSession';
 import { Timer, TimerControls, WorkReport, LanguageButton } from './home/components';
 import { ConfirmModal, LogoutModal, ReportModal, TechniqueModal } from './home/components/modals';
-import { User, TimerState, initialState } from './home/types';
+import { User, TimerState, initialState, TechniqueName } from './home/types';
 
 export default function Home() {
   const router = useRouter();
@@ -69,7 +69,8 @@ export default function Home() {
               lastStartTime: lastSession?.endTime ? null : lastSession?.startTime,
               sessions: activeWork.sessions,
               isFinished: activeWork.isFinished,
-              workId: activeWork.workId
+              workId: activeWork.workId,
+              selectedTechnique: activeWork.technique || null
             });
           } else {
             // If no active work session, reset timer state to initial
@@ -145,7 +146,7 @@ export default function Home() {
     }
   };
 
-  const handleTechniqueConfirm = (technique: string) => {
+  const handleTechniqueConfirm = (technique: TechniqueName) => {
     setShowTechniqueModal(false);
     if (user) {
       // Start work with technique for logged in users

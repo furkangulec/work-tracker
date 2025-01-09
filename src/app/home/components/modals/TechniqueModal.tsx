@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ModalProps } from '../../types';
+import { ModalProps, TechniqueName } from '../../types';
 
 interface TechniqueModalProps extends Omit<ModalProps, 'onConfirm'> {
-  onConfirm: (technique: string) => void;
+  onConfirm: (technique: TechniqueName) => void;
 }
 
 export function TechniqueModal({ onConfirm, onCancel, t }: TechniqueModalProps) {
@@ -38,7 +38,7 @@ export function TechniqueModal({ onConfirm, onCancel, t }: TechniqueModalProps) 
                 <div
                   key={key}
                   className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-500 cursor-pointer group transition-colors"
-                  onClick={() => onConfirm(key)}
+                  onClick={() => onConfirm(key as TechniqueName)}
                 >
                   <span className="text-gray-900">{technique.name}</span>
                   <div className="relative">

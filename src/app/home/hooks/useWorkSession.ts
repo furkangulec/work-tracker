@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { TimerState, initialState, WorkSession } from '../types';
+import { TimerState, initialState, WorkSession, TechniqueName } from '../types';
 
 export function useWorkSession(
   user: { id: string; email: string; firstName: string; lastName: string } | null,
   timerState: TimerState,
   setTimerState: Dispatch<SetStateAction<TimerState>>
 ) {
-  const startWork = useCallback(async (technique: string | null = null) => {
+  const startWork = useCallback(async (technique: TechniqueName | null = null) => {
     const currentTime = Date.now();
 
     if (user) {
@@ -39,7 +39,8 @@ export function useWorkSession(
             lastStartTime: currentTime,
             sessions: data.work.sessions,
             workTime: data.work.totalWorkTime,
-            breakTime: data.work.totalBreakTime
+            breakTime: data.work.totalBreakTime,
+            selectedTechnique: data.work.technique || prev.selectedTechnique
           }));
         } else {
           // Check if there is an active session
@@ -76,6 +77,7 @@ export function useWorkSession(
             workTime: data.work.totalWorkTime,
             breakTime: data.work.totalBreakTime,
             isFinished: false,
+            selectedTechnique: technique
           }));
         }
       } catch (error) {
@@ -98,6 +100,9 @@ export function useWorkSession(
         sessions[sessions.length - 1].endTime = currentTime;
       }
 
+      // Get technique from localStorage if exists
+      const savedTechnique = localStorage.getItem('selectedTechnique') as TechniqueName | null;
+
       // Start new work session
       const newSessions = [...sessions, { 
         startTime: currentTime, 
@@ -112,6 +117,7 @@ export function useWorkSession(
         lastStartTime: currentTime,
         sessions: newSessions,
         isFinished: false,
+        selectedTechnique: savedTechnique
       };
 
       localStorage.setItem('timerState', JSON.stringify(newState));

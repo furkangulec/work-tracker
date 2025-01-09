@@ -6,6 +6,8 @@ export interface WorkSession {
   type: 'work' | 'break';
 }
 
+export type TechniqueName = 'pomodoro' | '52-17' | '90-20';
+
 export interface TimerState {
   isWorking: boolean;
   isBreak: boolean;
@@ -15,6 +17,7 @@ export interface TimerState {
   sessions: WorkSession[];
   isFinished: boolean;
   workId?: string;
+  selectedTechnique?: TechniqueName | null;
 }
 
 export interface User {
@@ -53,4 +56,5 @@ export const initialState: TimerState = {
   lastStartTime: null,
   sessions: [],
   isFinished: false,
+  selectedTechnique: null,
 }; 
