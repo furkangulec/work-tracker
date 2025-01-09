@@ -56,6 +56,7 @@ export const translations = {
       title: 'Çalışma Tekniği',
       message: 'Çalışma tekniği seçmek ister misiniz?',
       select: 'Çalışma Tekniği Seç',
+      no: 'Hayır',
       techniques: {
         pomodoro: {
           name: 'Pomodoro Tekniği',
@@ -129,6 +130,7 @@ export const translations = {
       title: 'Work Technique',
       message: 'Would you like to choose a work technique?',
       select: 'Select Work Technique',
+      no: 'No',
       techniques: {
         pomodoro: {
           name: 'Pomodoro Technique',
@@ -202,6 +204,7 @@ export const translations = {
       title: '作業手法',
       message: '作業手法を選択してもよろしいですか？',
       select: '作業手法を選択',
+      no: 'いいえ',
       techniques: {
         pomodoro: {
           name: 'ポモドーロ・テクニック',

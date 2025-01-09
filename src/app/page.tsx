@@ -10,7 +10,7 @@ import { useTimer } from './home/hooks/useTimer';
 import { useWorkSession } from './home/hooks/useWorkSession';
 import { Timer, TimerControls, WorkReport, LanguageButton } from './home/components';
 import { ConfirmModal, LogoutModal, ReportModal, TechniqueModal } from './home/components/modals';
-import { User, TimerState } from './home/types';
+import { User, TimerState, initialState } from './home/types';
 
 export default function Home() {
   const router = useRouter();
@@ -36,16 +36,10 @@ export default function Home() {
         const data = await response.json();
         
         if (data.user) {
-          // First reset the timer state to initial
-          setTimerState((prev: TimerState) => ({ ...prev, isFinished: true }));
-          
-          // Then clear any existing local storage data
-          localStorage.removeItem('timerState');
-          
-          // Set user after clearing local data
+          // Set user first
           setUser(data.user);
           
-          // Finally check for active work session from database
+          // Then check for active work session from database
           const activeResponse = await fetch('/api/work/check-active');
           const activeData = await activeResponse.json();
           
@@ -77,7 +71,13 @@ export default function Home() {
               isFinished: activeWork.isFinished,
               workId: activeWork.workId
             });
+          } else {
+            // If no active work session, reset timer state to initial
+            setTimerState(initialState);
           }
+          
+          // Clear any existing local storage data
+          localStorage.removeItem('timerState');
         } else {
           setUser(null);
         }
@@ -152,6 +152,8 @@ export default function Home() {
 
   const handleTechniqueCancel = () => {
     setShowTechniqueModal(false);
+    // Start work even if user doesn't select a technique
+    startWork();
   };
 
   const formatDateTime = (timestamp: number) => {
