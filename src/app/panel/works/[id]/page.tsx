@@ -13,6 +13,7 @@ const translations = {
     error: 'Çalışma detayları yüklenirken bir hata oluştu',
     notFound: 'Çalışma bulunamadı',
     backToList: 'Listeye Dön',
+    viewNotes: 'Notları Görüntüle',
     details: {
       startTime: 'Başlangıç Zamanı',
       endTime: 'Bitiş Zamanı',
@@ -31,6 +32,7 @@ const translations = {
     error: 'An error occurred while loading work details',
     notFound: 'Work not found',
     backToList: 'Back to List',
+    viewNotes: 'View Notes',
     details: {
       startTime: 'Start Time',
       endTime: 'End Time',
@@ -48,7 +50,8 @@ const translations = {
     loading: '作業詳細を読み込んでいます...',
     error: '作業詳細の読み込み中にエラーが発生しました',
     notFound: '作業が見つかりません',
-    backToList: '一覧に戻る',
+    backToList: 'リストに戻る',
+    viewNotes: 'メモを表示',
     details: {
       startTime: '開始時間',
       endTime: '終了時間',
@@ -64,39 +67,37 @@ const translations = {
 };
 
 export default function WorkDetail() {
+  const { language } = useLanguage();
+  const t = translations[language];
+  const params = useParams();
   const [work, setWork] = useState<Work | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { language } = useLanguage();
-  const params = useParams();
-
-  const t = translations[language as keyof typeof translations];
-
-  const fetchWorkDetail = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/work/${params.id}`);
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch work details');
-      }
-
-      if (!data.work) {
-        setError('Work not found');
-        return;
-      }
-
-      setWork(data.work);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  }, [params.id]);
 
   useEffect(() => {
-    fetchWorkDetail();
-  }, [fetchWorkDetail]);
+    const fetchWorkDetails = async () => {
+      try {
+        const response = await fetch(`/api/work/${params.id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setWork(data.work);
+        } else {
+          setError(t.notFound);
+        }
+      } catch (err) {
+        setError(t.error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWorkDetails();
+  }, [params.id, t]);
+
+  if (loading) return <div className="p-4">{t.loading}</div>;
+  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  if (!work) return <div className="p-4">{t.notFound}</div>;
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString(
@@ -128,62 +129,40 @@ export default function WorkDetail() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 p-8">
-        <div className="max-w-4xl mx-auto">
-          <p>{t.loading}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-100 p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <p>{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!work) {
-    return (
-      <div className="min-h-screen bg-gray-100 p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-            <p>{t.notFound}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100 relative">
+    <div className="p-4">
       {/* Squared notebook background */}
       <div 
-        className="absolute inset-0 pointer-events-none" 
+        className="fixed right-0 top-0 bottom-0 pointer-events-none" 
         style={{
+          left: '256px', // Sol menünün genişliği
           backgroundImage: `
             linear-gradient(#e5e7eb 1px, transparent 1px),
             linear-gradient(90deg, #e5e7eb 1px, transparent 1px)
           `,
           backgroundSize: '24px 24px',
-          opacity: 0.2
+          opacity: 0.2,
+          zIndex: 0
         }}
       />
+
       <div className="max-w-4xl mx-auto p-8 relative z-10">
-        <div className="mb-8 flex justify-between items-center">
-          <Link
-            href="/panel/works"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            ← {t.backToList}
-          </Link>
+        <div className="mb-8 flex justify-between items-center bg-white px-4 py-2 rounded-lg shadow-sm">
+          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
+          <div className="space-x-2">
+            <Link
+              href={`/notes?workId=${params.id}`}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {t.viewNotes}
+            </Link>
+            <Link
+              href="/panel/works"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              ← {t.backToList}
+            </Link>
+          </div>
         </div>
 
         <div className="space-y-6">

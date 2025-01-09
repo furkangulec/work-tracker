@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function useAuthCheck() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [workId, setWorkId] = useState<string | null>(null);
 
@@ -18,7 +19,25 @@ export function useAuthCheck() {
           return;
         }
 
-        // Check if user has active work session
+        // Get workId from URL parameters
+        const paramWorkId = searchParams.get('workId');
+
+        if (paramWorkId) {
+          // If workId is provided in URL, verify ownership
+          const workResponse = await fetch(`/api/work/${paramWorkId}`);
+          const workData = await workResponse.json();
+
+          if (!workData.success) {
+            router.push('/panel/works');
+            return;
+          }
+
+          setWorkId(paramWorkId);
+          setIsLoading(false);
+          return;
+        }
+
+        // If no workId in URL, check for active work session
         const activeWorkResponse = await fetch('/api/work/check-active');
         const activeWorkData = await activeWorkResponse.json();
         
@@ -36,7 +55,7 @@ export function useAuthCheck() {
     };
 
     checkAccess();
-  }, [router]);
+  }, [router, searchParams]);
 
   return { isLoading, workId };
 } 

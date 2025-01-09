@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from './translations';
 import { DeleteModal } from './components/DeleteModal';
@@ -16,6 +16,7 @@ export default function NotesPage() {
   const { language } = useLanguage();
   const { isLoading, workId } = useAuthCheck();
   const [deleteModal, setDeleteModal] = useState<{ id: string; content: string } | null>(null);
+  const searchParams = useSearchParams();
   
   const {
     notes,
@@ -75,6 +76,15 @@ export default function NotesPage() {
     }
   };
 
+  const handleClose = () => {
+    const paramWorkId = searchParams.get('workId');
+    if (paramWorkId) {
+      router.push(`/panel/works/${paramWorkId}`);
+    } else {
+      router.push('/');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -88,7 +98,7 @@ export default function NotesPage() {
       <NotesHeader
         onNewNote={createNewNote}
         onSave={saveNotes}
-        onClose={() => router.push('/')}
+        onClose={handleClose}
         isSaving={isSaving}
       />
 
