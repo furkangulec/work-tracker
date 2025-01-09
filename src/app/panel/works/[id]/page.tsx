@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -85,7 +85,7 @@ export default function WorkDetail() {
         } else {
           setError(t.notFound);
         }
-      } catch (err) {
+      } catch {
         setError(t.error);
       } finally {
         setLoading(false);

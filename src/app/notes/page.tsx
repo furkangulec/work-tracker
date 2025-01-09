@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from './translations';
@@ -11,7 +11,7 @@ import { CorkBoard } from './components/CorkBoard';
 import { useNotes } from './hooks/useNotes';
 import { useAuthCheck } from './hooks/useAuthCheck';
 
-export default function NotesPage() {
+function NotesContent() {
   const router = useRouter();
   const { language } = useLanguage();
   const { isLoading, workId } = useAuthCheck();
@@ -125,5 +125,17 @@ export default function NotesPage() {
         />
       )}
     </CorkBoard>
+  );
+}
+
+export default function NotesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    }>
+      <NotesContent />
+    </Suspense>
   );
 } 

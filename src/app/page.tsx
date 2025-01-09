@@ -89,7 +89,7 @@ export default function Home() {
     }
 
     checkAuth();
-  }, []); // Run only once on component mount
+  }, [setTimerState]);
 
   const handleFinishWork = () => {
     setShowConfirm(true);

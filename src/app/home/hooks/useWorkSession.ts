@@ -1,12 +1,46 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { TimerState, initialState, WorkSession, TechniqueName } from '../types';
+import { TimerState, initialState, TechniqueName } from '../types';
 
 export function useWorkSession(
   user: { id: string; email: string; firstName: string; lastName: string } | null,
   timerState: TimerState,
   setTimerState: Dispatch<SetStateAction<TimerState>>
 ) {
+  const startWorkLocally = useCallback((currentTime: number, technique: TechniqueName | null = null) => {
+    setTimerState((prev: TimerState): TimerState => {
+      const sessions = prev.sessions || [];
+      
+      // Close the last session if it's still open
+      if (sessions.length > 0 && !sessions[sessions.length - 1].endTime) {
+        sessions[sessions.length - 1].endTime = currentTime;
+      }
+
+      // Get technique from parameter or localStorage
+      const savedTechnique = technique || localStorage.getItem('selectedTechnique') as TechniqueName | null;
+
+      // Start new work session
+      const newSessions = [...sessions, { 
+        startTime: currentTime, 
+        endTime: null, 
+        type: 'work' as const 
+      }];
+
+      const newState = {
+        ...prev,
+        isWorking: true,
+        isBreak: false,
+        lastStartTime: currentTime,
+        sessions: newSessions,
+        isFinished: false,
+        selectedTechnique: savedTechnique
+      };
+
+      localStorage.setItem('timerState', JSON.stringify(newState));
+      return newState;
+    });
+  }, [setTimerState]);
+
   const startWork = useCallback(async (technique: TechniqueName | null = null) => {
     const currentTime = Date.now();
 
@@ -90,9 +124,9 @@ export function useWorkSession(
       // Use localStorage for guests
       startWorkLocally(currentTime, technique);
     }
-  }, [user, timerState.sessions, timerState.workId, timerState.selectedTechnique, setTimerState]);
+  }, [user, setTimerState, startWorkLocally, timerState.workId, timerState.sessions, timerState.selectedTechnique]);
 
-  const startWorkLocally = useCallback((currentTime: number, technique: TechniqueName | null = null) => {
+  const startBreakLocally = useCallback((currentTime: number) => {
     setTimerState((prev: TimerState): TimerState => {
       const sessions = prev.sessions || [];
       
@@ -101,24 +135,19 @@ export function useWorkSession(
         sessions[sessions.length - 1].endTime = currentTime;
       }
 
-      // Get technique from parameter or localStorage
-      const savedTechnique = technique || localStorage.getItem('selectedTechnique') as TechniqueName | null;
-
-      // Start new work session
+      // Start new break session
       const newSessions = [...sessions, { 
         startTime: currentTime, 
         endTime: null, 
-        type: 'work' as const 
+        type: 'break' as const 
       }];
 
       const newState = {
         ...prev,
-        isWorking: true,
-        isBreak: false,
+        isWorking: false,
+        isBreak: true,
         lastStartTime: currentTime,
         sessions: newSessions,
-        isFinished: false,
-        selectedTechnique: savedTechnique
       };
 
       localStorage.setItem('timerState', JSON.stringify(newState));
@@ -167,9 +196,9 @@ export function useWorkSession(
       // Use localStorage for guests
       startBreakLocally(currentTime);
     }
-  }, [user, timerState.workId, setTimerState]);
+  }, [user, setTimerState, startBreakLocally, timerState.workId]);
 
-  const startBreakLocally = useCallback((currentTime: number) => {
+  const finishWorkLocally = useCallback((currentTime: number) => {
     setTimerState((prev: TimerState): TimerState => {
       const sessions = prev.sessions || [];
       
@@ -178,19 +207,13 @@ export function useWorkSession(
         sessions[sessions.length - 1].endTime = currentTime;
       }
 
-      // Start new break session
-      const newSessions = [...sessions, { 
-        startTime: currentTime, 
-        endTime: null, 
-        type: 'break' as const 
-      }];
-
       const newState = {
         ...prev,
         isWorking: false,
-        isBreak: true,
-        lastStartTime: currentTime,
-        sessions: newSessions,
+        isBreak: false,
+        lastStartTime: null,
+        sessions,
+        isFinished: true,
       };
 
       localStorage.setItem('timerState', JSON.stringify(newState));
@@ -237,46 +260,7 @@ export function useWorkSession(
       // Use localStorage for guests
       finishWorkLocally(currentTime);
     }
-  }, [user, timerState.workId, setTimerState]);
-
-  const finishWorkLocally = useCallback((currentTime: number) => {
-    setTimerState((prev: TimerState): TimerState => {
-      const sessions = prev.sessions || [];
-      
-      // Close the last session if it's still open
-      if (sessions.length > 0 && !sessions[sessions.length - 1].endTime) {
-        sessions[sessions.length - 1].endTime = currentTime;
-      }
-
-      // Calculate total work and break times from all sessions
-      let totalWorkTime = 0;
-      let totalBreakTime = 0;
-
-      sessions.forEach((session: WorkSession) => {
-        const endTime = session.endTime || currentTime;
-        const duration = endTime - session.startTime;
-        
-        if (session.type === 'work') {
-          totalWorkTime += duration;
-        } else {
-          totalBreakTime += duration;
-        }
-      });
-
-      const newState = {
-        ...prev,
-        isWorking: false,
-        isBreak: false,
-        lastStartTime: null,
-        sessions: sessions,
-        isFinished: true,
-        workTime: totalWorkTime,
-        breakTime: totalBreakTime
-      };
-      localStorage.setItem('timerState', JSON.stringify(newState));
-      return newState;
-    });
-  }, [setTimerState]);
+  }, [user, setTimerState, finishWorkLocally, timerState.workId]);
 
   const resetTimers = useCallback(() => {
     localStorage.setItem('timerState', JSON.stringify(initialState));

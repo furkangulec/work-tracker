@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { TimerState, initialState } from '../types';
 
 export function useTimer(user: { id: string; email: string; firstName: string; lastName: string } | null) {
