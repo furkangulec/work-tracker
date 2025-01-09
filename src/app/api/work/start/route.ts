@@ -18,6 +18,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get request body
+    const { technique } = await request.json();
+
     // Connect to MongoDB
     const client = await clientPromise;
     const db = client.db('work-tracker');
@@ -46,7 +49,8 @@ export async function POST(request: Request) {
         type: 'work' as const
       }],
       totalWorkTime: 0,
-      totalBreakTime: 0
+      totalBreakTime: 0,
+      technique: technique
     };
 
     const result = await works.insertOne(newWork);

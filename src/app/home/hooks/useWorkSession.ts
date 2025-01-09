@@ -22,7 +22,8 @@ export function useWorkSession(
             },
             body: JSON.stringify({
               workId: timerState.workId,
-              action: 'continue'
+              action: 'continue',
+              technique: technique || timerState.selectedTechnique
             }),
           });
           const data = await response.json();
@@ -77,7 +78,7 @@ export function useWorkSession(
             workTime: data.work.totalWorkTime,
             breakTime: data.work.totalBreakTime,
             isFinished: false,
-            selectedTechnique: technique
+            selectedTechnique: data.work.technique || technique
           }));
         }
       } catch (error) {
@@ -87,11 +88,11 @@ export function useWorkSession(
       }
     } else {
       // Use localStorage for guests
-      startWorkLocally(currentTime);
+      startWorkLocally(currentTime, technique);
     }
-  }, [user, timerState.sessions, timerState.workId, setTimerState]);
+  }, [user, timerState.sessions, timerState.workId, timerState.selectedTechnique, setTimerState]);
 
-  const startWorkLocally = useCallback((currentTime: number) => {
+  const startWorkLocally = useCallback((currentTime: number, technique: TechniqueName | null = null) => {
     setTimerState((prev: TimerState): TimerState => {
       const sessions = prev.sessions || [];
       
@@ -100,8 +101,8 @@ export function useWorkSession(
         sessions[sessions.length - 1].endTime = currentTime;
       }
 
-      // Get technique from localStorage if exists
-      const savedTechnique = localStorage.getItem('selectedTechnique') as TechniqueName | null;
+      // Get technique from parameter or localStorage
+      const savedTechnique = technique || localStorage.getItem('selectedTechnique') as TechniqueName | null;
 
       // Start new work session
       const newSessions = [...sessions, { 

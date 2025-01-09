@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { TechniqueName } from '@/app/home/types';
 
 export interface WorkSession {
   startTime: number;
@@ -16,4 +17,5 @@ export interface Work {
   totalWorkTime: number;
   totalBreakTime: number;
   hasNotes?: boolean;
+  technique?: TechniqueName | null;
 } 

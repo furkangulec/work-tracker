@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     }
 
     // Get request body
-    const { workId, action } = await request.json();
+    const { workId, action, technique } = await request.json();
     if (!workId || !action) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -77,6 +77,10 @@ export async function POST(request: Request) {
           endTime: null,
           type: 'work'
         });
+        // Update technique if provided
+        if (technique) {
+          update.technique = technique;
+        }
         break;
 
       case 'finish':

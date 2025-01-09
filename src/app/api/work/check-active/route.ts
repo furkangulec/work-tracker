@@ -35,7 +35,8 @@ export async function GET(request: Request) {
         sessions: activeWork.sessions,
         totalWorkTime: activeWork.totalWorkTime,
         totalBreakTime: activeWork.totalBreakTime,
-        isFinished: activeWork.isFinished
+        isFinished: activeWork.isFinished,
+        technique: activeWork.technique
       } : null
     });
   } catch (error) {
