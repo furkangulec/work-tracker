@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { ModalProps } from '../../types';
 
-export function TechniqueModal({ onConfirm, onCancel, t }: ModalProps) {
+interface TechniqueModalProps extends Omit<ModalProps, 'onConfirm'> {
+  onConfirm: (technique: string) => void;
+}
+
+export function TechniqueModal({ onConfirm, onCancel, t }: TechniqueModalProps) {
   const [showTechniqueList, setShowTechniqueList] = useState(false);
 
   return (
@@ -34,7 +38,7 @@ export function TechniqueModal({ onConfirm, onCancel, t }: ModalProps) {
                 <div
                   key={key}
                   className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-500 cursor-pointer group transition-colors"
-                  onClick={onConfirm}
+                  onClick={() => onConfirm(key)}
                 >
                   <span className="text-gray-900">{technique.name}</span>
                   <div className="relative">
@@ -55,7 +59,7 @@ export function TechniqueModal({ onConfirm, onCancel, t }: ModalProps) {
                 onClick={onCancel}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800"
               >
-                {t.buttons.cancel}
+                {t.techniqueModal.no}
               </button>
             </div>
           </>

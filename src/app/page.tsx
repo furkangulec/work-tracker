@@ -145,15 +145,27 @@ export default function Home() {
     }
   };
 
-  const handleTechniqueConfirm = () => {
+  const handleTechniqueConfirm = (technique: string) => {
     setShowTechniqueModal(false);
-    startWork();
+    if (user) {
+      // Start work with technique for logged in users
+      startWork(technique);
+    } else {
+      // Store technique in localStorage for non-logged in users
+      localStorage.setItem('selectedTechnique', technique);
+      startWork();
+    }
   };
 
   const handleTechniqueCancel = () => {
     setShowTechniqueModal(false);
-    // Start work even if user doesn't select a technique
-    startWork();
+    // Start work without any technique
+    if (user) {
+      startWork(null);
+    } else {
+      localStorage.removeItem('selectedTechnique');
+      startWork();
+    }
   };
 
   const formatDateTime = (timestamp: number) => {

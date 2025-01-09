@@ -7,7 +7,7 @@ export function useWorkSession(
   timerState: TimerState,
   setTimerState: Dispatch<SetStateAction<TimerState>>
 ) {
-  const startWork = useCallback(async () => {
+  const startWork = useCallback(async (technique: string | null = null) => {
     const currentTime = Date.now();
 
     if (user) {
@@ -53,6 +53,12 @@ export function useWorkSession(
           // Start new work session
           const response = await fetch('/api/work/start', {
             method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              technique: technique
+            }),
           });
           const data = await response.json();
 
